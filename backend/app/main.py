@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.logging import get_logger
+from app.core.security import InMemoryRateLimiter, SecurityHeadersMiddleware
 
 logger = get_logger("scamshield.main")
 
@@ -18,6 +19,14 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     docs_url=f"{settings.API_V1_STR}/docs",
     redoc_url=f"{settings.API_V1_STR}/redoc",
+)
+
+# Register Security Hardening & Rate Limiting Middleware
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(
+    InMemoryRateLimiter,
+    max_requests=settings.RATE_LIMIT_PER_MINUTE,
+    window_seconds=60
 )
 
 # Configure Cross-Origin Resource Sharing (CORS)

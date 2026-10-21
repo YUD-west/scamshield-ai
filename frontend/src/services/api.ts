@@ -1,5 +1,10 @@
 import {
   HealthResponse,
+  IncidentCreateRequest,
+  IncidentRecord,
+  MultimediaInspectRequest,
+  MultimediaInspectResult,
+  OfficialReportExport,
   SimulationRequest,
   SimulationResponse,
   TextAnalysisRequest,
@@ -74,5 +79,42 @@ export const apiService = {
       body: JSON.stringify(payload),
     });
     return handleResponse<SimulationResponse>(res);
+  },
+
+  async recordIncident(payload: IncidentCreateRequest): Promise<IncidentRecord> {
+    const res = await fetch(`${API_BASE}/incident/record`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    return handleResponse<IncidentRecord>(res);
+  },
+
+  async listIncidents(): Promise<IncidentRecord[]> {
+    const res = await fetch(`${API_BASE}/incident/vault`);
+    return handleResponse<IncidentRecord[]>(res);
+  },
+
+  async getIncident(incidentId: string): Promise<IncidentRecord> {
+    const res = await fetch(`${API_BASE}/incident/${incidentId}`);
+    return handleResponse<IncidentRecord>(res);
+  },
+
+  async exportIncidentReport(incidentId: string): Promise<OfficialReportExport> {
+    const res = await fetch(`${API_BASE}/incident/${incidentId}/export`);
+    return handleResponse<OfficialReportExport>(res);
+  },
+
+  async inspectMedia(payload: MultimediaInspectRequest): Promise<MultimediaInspectResult> {
+    const res = await fetch(`${API_BASE}/media/inspect`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    return handleResponse<MultimediaInspectResult>(res);
   },
 };

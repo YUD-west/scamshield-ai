@@ -120,3 +120,69 @@ export interface SimulationResponse {
   safety_disclaimer: string;
   simulated_at: string;
 }
+
+// --- Incident Response & Vault Types ---
+
+export interface ConsentLocation {
+  user_consent_granted: boolean;
+  latitude: number;
+  longitude: number;
+  accuracy_meters?: number | null;
+  captured_at?: string;
+}
+
+export interface IncidentCreateRequest {
+  title: string;
+  category: ThreatCategory;
+  severity: RiskSeverity;
+  description: string;
+  raw_evidence: string;
+  sender_information?: string | null;
+  consent_location?: ConsentLocation | null;
+  financial_loss_amount?: number | null;
+}
+
+export interface IncidentRecord {
+  incident_id: string;
+  title: string;
+  category: ThreatCategory;
+  severity: RiskSeverity;
+  description: string;
+  raw_evidence: string;
+  evidence_sha256: string;
+  sender_information?: string | null;
+  consent_location?: ConsentLocation | null;
+  financial_loss_amount?: number | null;
+  status: string;
+  created_at: string;
+}
+
+export interface OfficialReportExport {
+  incident_id: string;
+  docket_number: string;
+  markdown_report: string;
+  json_bundle: any;
+  verification_signature: string;
+  transmission_status: string;
+}
+
+// --- Multimedia Types ---
+
+export interface MultimediaInspectRequest {
+  filename: string;
+  content_base64: string;
+  mime_type: string;
+}
+
+export interface MultimediaInspectResult {
+  filename: string;
+  mime_type: string;
+  file_size_bytes: number;
+  sha256_checksum: string;
+  extracted_text?: string | null;
+  extracted_urls: string[];
+  threat_assessment?: TextAnalysisResult | null;
+  integration_status: string;
+  is_suspicious_extension: boolean;
+  disclaimer: string;
+}

@@ -150,3 +150,75 @@ class SimulationResponse(BaseModel):
     )
     simulated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+
+# --- Incident Response & Vault Schemas ---
+
+class ConsentLocation(BaseModel):
+    user_consent_granted: bool = Field(
+        ...,
+        description="Explicit user consent must be True to accept location context"
+    )
+    latitude: float = Field(..., ge=-90.0, le=90.0)
+    longitude: float = Field(..., ge=-180.0, le=180.0)
+    accuracy_meters: Optional[float] = None
+    captured_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class IncidentCreateRequest(BaseModel):
+    title: str = Field(..., min_length=3, max_length=150)
+    category: ThreatCategory
+    severity: RiskSeverity
+    description: str = Field(..., min_length=10, max_length=5000)
+    raw_evidence: str = Field(..., min_length=1, max_length=20000)
+    sender_information: Optional[str] = Field(None, max_length=255)
+    consent_location: Optional[ConsentLocation] = None
+    financial_loss_amount: Optional[float] = Field(None, ge=0.0)
+
+
+class IncidentRecord(BaseModel):
+    incident_id: str
+    title: str
+    category: ThreatCategory
+    severity: RiskSeverity
+    description: str
+    raw_evidence: str
+    evidence_sha256: str
+    sender_information: Optional[str] = None
+    consent_location: Optional[ConsentLocation] = None
+    financial_loss_amount: Optional[float] = None
+    status: str = "EVIDENCE_LOCKED"
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class OfficialReportExport(BaseModel):
+    incident_id: str
+    docket_number: str
+    markdown_report: str
+    json_bundle: dict
+    verification_signature: str
+    transmission_status: str
+
+
+# --- Multimedia Boundary Schemas ---
+
+class MultimediaInspectRequest(BaseModel):
+    filename: str
+    content_base64: str = Field(..., description="Base64-encoded media bytes")
+    mime_type: str = Field(..., description="e.g. image/png, audio/mp3")
+
+
+class MultimediaInspectResult(BaseModel):
+    filename: str
+    mime_type: str
+    file_size_bytes: int
+    sha256_checksum: str
+    extracted_text: Optional[str] = None
+    extracted_urls: List[str] = Field(default_factory=list)
+    threat_assessment: Optional[TextAnalysisResult] = None
+    integration_status: str
+    is_suspicious_extension: bool = False
+    disclaimer: str = Field(
+        default="Passive multimedia inspection only. Audio transcription and deepfake audio analysis interface defined at service boundary."
+    )
+
+

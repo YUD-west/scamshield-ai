@@ -107,3 +107,46 @@ class HealthResponse(BaseModel):
     analyzers_ready: bool = True
     active_services: List[str]
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+# --- Risk Simulation Schemas ---
+
+class AttackStage(BaseModel):
+    stage_number: int
+    title: str = Field(..., description="Stage name (e.g. Lure Delivery, Credential Capture)")
+    attacker_objective: str = Field(..., description="What the attacker is attempting to accomplish")
+    realistic_action: str = Field(..., description="Hypothetical next step taken by the threat actor")
+    warning_signs: List[str] = Field(default_factory=list, description="Observable red flags during this phase")
+    prevention_gate: str = Field(..., description="Friction or security control that halts the attack chain here")
+
+
+class SimulationRequest(BaseModel):
+    category: Optional[ThreatCategory] = Field(
+        None,
+        description="Threat category to simulate (e.g. PHISHING, FINANCIAL_FRAUD, IMPERSONATION)"
+    )
+    observed_text: Optional[str] = Field(
+        None,
+        max_length=5000,
+        description="Optional suspicious message to derive custom scenario indicators"
+    )
+    domain_or_url: Optional[str] = Field(
+        None,
+        max_length=2048,
+        description="Optional suspicious URL to incorporate into attack modeling"
+    )
+
+
+class SimulationResponse(BaseModel):
+    scenario_name: str
+    threat_category: ThreatCategory
+    attack_vector: str
+    hypothetical_progression: List[AttackStage]
+    potential_consequences: List[str]
+    critical_warning_signs: List[str]
+    recommended_prevention_gates: List[str]
+    safety_disclaimer: str = Field(
+        default="Safe descriptive scenario modeled strictly for defensive risk assessment. Does not predict the future with certainty or execute offensive code."
+    )
+    simulated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+

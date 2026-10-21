@@ -12,6 +12,18 @@ export const App: React.FC = () => {
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [healthLoading, setHealthLoading] = useState(true);
 
+  // Cross-module simulation context
+  const [simContext, setSimContext] = useState<{
+    category?: any;
+    text?: string;
+    url?: string;
+  }>({});
+
+  const handleTriggerSimulation = (category: any, text?: string, url?: string) => {
+    setSimContext({ category, text, url });
+    setActiveTab('simulator');
+  };
+
   useEffect(() => {
     let isMounted = true;
     const fetchHealth = async () => {
@@ -45,8 +57,17 @@ export const App: React.FC = () => {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'triage' && <TriageScanner />}
-        {activeTab === 'simulator' && <RiskSimulatorView />}
+        {activeTab === 'triage' && (
+          <TriageScanner onSimulateScenario={handleTriggerSimulation} />
+        )}
+        {activeTab === 'simulator' && (
+          <RiskSimulatorView
+            key={`${simContext.category}-${simContext.url}-${simContext.text}`}
+            initialCategory={simContext.category || 'PHISHING'}
+            initialText={simContext.text || ''}
+            initialUrl={simContext.url || ''}
+          />
+        )}
         {activeTab === 'incident' && <IncidentVaultView />}
       </main>
 

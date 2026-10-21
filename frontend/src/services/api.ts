@@ -1,5 +1,7 @@
 import {
   HealthResponse,
+  SimulationRequest,
+  SimulationResponse,
   TextAnalysisRequest,
   TextAnalysisResult,
   UrlAnalysisRequest,
@@ -61,5 +63,16 @@ export const apiService = {
       body: JSON.stringify(payload),
     });
     return handleResponse<UrlAnalysisResult>(res);
+  },
+
+  async simulateScenario(payload: SimulationRequest): Promise<SimulationResponse> {
+    const res = await fetch(`${API_BASE}/simulate/scenario`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+    return handleResponse<SimulationResponse>(res);
   },
 };

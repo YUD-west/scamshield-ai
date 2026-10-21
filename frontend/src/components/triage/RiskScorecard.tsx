@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   Tag,
   AlertTriangle,
+  Terminal,
 } from 'lucide-react';
 import { TextAnalysisResult, UrlAnalysisResult } from '../../types';
 import { ConfidenceMeter } from '../common/ConfidenceMeter';
@@ -18,12 +19,14 @@ interface RiskScorecardProps {
   result: TextAnalysisResult | UrlAnalysisResult;
   type: 'text' | 'url';
   onInspectExtractedUrl?: (url: string) => void;
+  onSimulateScenario?: (category: string) => void;
 }
 
 export const RiskScorecard: React.FC<RiskScorecardProps> = ({
   result,
   type,
   onInspectExtractedUrl,
+  onSimulateScenario,
 }) => {
   const isUrlResult = type === 'url' && 'domain' in result;
   const urlData = isUrlResult ? (result as UrlAnalysisResult) : null;
@@ -90,7 +93,16 @@ export const RiskScorecard: React.FC<RiskScorecardProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-4 self-start lg:self-center">
+          <div className="flex flex-wrap items-center gap-3 self-start lg:self-center">
+            {onSimulateScenario && result.is_threat && (
+              <button
+                onClick={() => onSimulateScenario(result.primary_category)}
+                className="px-3 py-1.5 rounded-lg bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/40 text-xs font-mono font-semibold flex items-center gap-1.5 transition-colors shadow-sm"
+              >
+                <Terminal className="w-3.5 h-3.5" />
+                Simulate Scenario
+              </button>
+            )}
             <SeverityBadge severity={result.severity} size="lg" />
           </div>
         </div>

@@ -91,3 +91,32 @@ export interface HealthResponse {
   active_services: string[];
   timestamp: string;
 }
+
+// --- Simulation Types ---
+
+export interface AttackStage {
+  stage_number: number;
+  title: string;
+  attacker_objective: string;
+  realistic_action: string;
+  warning_signs: string[];
+  prevention_gate: string;
+}
+
+export interface SimulationRequest {
+  category?: ThreatCategory;
+  observed_text?: string;
+  domain_or_url?: string;
+}
+
+export interface SimulationResponse {
+  scenario_name: string;
+  threat_category: ThreatCategory;
+  attack_vector: string;
+  hypothetical_progression: AttackStage[];
+  potential_consequences: string[];
+  critical_warning_signs: string[];
+  recommended_prevention_gates: string[];
+  safety_disclaimer: string;
+  simulated_at: string;
+}

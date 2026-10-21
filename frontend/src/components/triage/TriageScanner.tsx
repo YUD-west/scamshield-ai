@@ -60,7 +60,11 @@ const SAMPLE_PRESETS = [
   },
 ];
 
-export const TriageScanner: React.FC = () => {
+interface TriageScannerProps {
+  onSimulateScenario?: (category: any, text?: string, url?: string) => void;
+}
+
+export const TriageScanner: React.FC<TriageScannerProps> = ({ onSimulateScenario }) => {
   const [activeTab, setActiveTab] = useState<'text' | 'url'>('text');
   const [textContent, setTextContent] = useState('');
   const [senderHint, setSenderHint] = useState('');
@@ -328,11 +332,16 @@ export const TriageScanner: React.FC = () => {
           result={textResult}
           type="text"
           onInspectExtractedUrl={(url) => handleUrlScan(url)}
+          onSimulateScenario={(cat) => onSimulateScenario && onSimulateScenario(cat, textContent)}
         />
       )}
 
       {activeTab === 'url' && urlResult && (
-        <RiskScorecard result={urlResult} type="url" />
+        <RiskScorecard
+          result={urlResult}
+          type="url"
+          onSimulateScenario={(cat) => onSimulateScenario && onSimulateScenario(cat, undefined, urlResult.domain)}
+        />
       )}
     </div>
   );

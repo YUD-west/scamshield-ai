@@ -172,8 +172,8 @@ class SafeUrlAnalyzer:
             highest_severity = RiskSeverity.INFORMATIONAL
             confidence = 0.85
             summary = (
-                f"No known malicious indicators or homoglyph spoofing detected for domain '{domain}'. "
-                "Structure appears standard."
+                f"Good news! We checked '{domain}' and it looks like a standard, normal website address. "
+                "No lookalike trick letters or known scam feeds were found."
             )
         else:
             summary = self._build_url_summary(domain, highest_severity, primary_category, threat_match, evidence_list)
@@ -210,20 +210,20 @@ class SafeUrlAnalyzer:
     ) -> str:
         if threat_intel:
             return (
-                f"CRITICAL THREAT: Domain '{domain}' is listed in verified threat intelligence feeds as actively malicious. "
-                "Do not open, download from, or interact with this link."
+                f"DANGER: Website '{domain}' is confirmed as an active scam site on verified security threat lists. "
+                "Do NOT open this website or type anything into it."
             )
         if severity == RiskSeverity.HIGH:
             return (
-                f"HIGH RISK: Domain '{domain}' exhibits deceptive structural traits ({len(evidence)} indicator(s) found), "
-                "including possible brand impersonation or visual homoglyph spoofing."
+                f"HIGH RISK: Website '{domain}' is pretending to be a real company using trick letters or lookalike names. "
+                "Scammers use this to fool your eyes and steal your logins."
             )
         elif severity == RiskSeverity.MEDIUM:
             return (
-                f"SUSPICIOUS DOMAIN: '{domain}' displays anomalies such as a high-risk TLD or atypical subdomain nesting. "
-                "Manual destination verification is recommended."
+                f"SUSPICIOUS LINK: '{domain}' has unusual domain patterns or a suspicious web extension. "
+                "Be very careful before clicking."
             )
-        return f"LOW RISK: Minor structural flags observed on '{domain}'. Exercise normal caution."
+        return f"CAUTION: Some unusual patterns were found on '{domain}'. Be mindful."
 
     def _build_url_recommendations(
         self,
@@ -237,8 +237,8 @@ class SafeUrlAnalyzer:
             recs.append(
                 ProtectionRecommendation(
                     priority="ADVISORY",
-                    action="Ensure SSL padlock and correct hostname in address bar",
-                    rationale="Confirm the domain matches your intended service exactly before submitting credentials."
+                    action="Check the address bar before typing passwords",
+                    rationale="Make sure the website address matches the company you intend to visit."
                 )
             )
             return recs
@@ -247,30 +247,30 @@ class SafeUrlAnalyzer:
             recs.append(
                 ProtectionRecommendation(
                     priority="URGENT",
-                    action="Do NOT open or submit any credentials to this destination",
-                    rationale="Opening this destination exposes you to credential theft and malicious session hijacking."
+                    action="Do NOT open this website or type your password",
+                    rationale="Opening this fake site can trick you into handing over your account access or downloading malware."
                 )
             )
             recs.append(
                 ProtectionRecommendation(
                     priority="RECOMMENDED",
-                    action="Block domain in local network or browser ad-block filter",
-                    rationale=f"Preventing DNS resolution to '{domain}' shields devices on your local network."
+                    action="Close the tab or message immediately",
+                    rationale="Staying away from this website keeps your computer and phone safe."
                 )
             )
             recs.append(
                 ProtectionRecommendation(
                     priority="RECOMMENDED",
-                    action="Report suspicious link to provider hosting abuse team",
-                    rationale="Prompt abuse reports lead to domain suspension and registrar takedowns."
+                    action="If you already entered your password, change it on the real website now",
+                    rationale="Go to the real website directly in a new tab and change your password immediately before scammers use it."
                 )
             )
         else:
             recs.append(
                 ProtectionRecommendation(
                     priority="RECOMMENDED",
-                    action="Verify domain ownership through official search engine or brand index",
-                    rationale="Legitimate organizations rarely use high-risk disposable TLDs for user communications."
+                    action="Search for the real company website on Google",
+                    rationale="Real banks and businesses rarely use strange, cheap domain extensions for customer notifications."
                 )
             )
 

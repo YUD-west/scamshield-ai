@@ -249,26 +249,38 @@ class TextThreatAnalyzer:
         evidence: List[EvidenceItem]
     ) -> str:
         if not is_threat:
-            return "No overt indicators of malicious intent or scam patterns were detected in this message. Maintain standard digital hygiene."
+            return "Good news! We did not find any obvious signs of a scam or threat in this message. It looks like a normal, safe message."
+
+        friendly_names = {
+            ThreatCategory.PHISHING: "a fake login scam (phishing)",
+            ThreatCategory.CREDENTIAL_HARVESTING: "an attempt to steal your passwords or 2FA security codes",
+            ThreatCategory.IMPERSONATION: "someone pretending to be an official company or government agency",
+            ThreatCategory.FINANCIAL_FRAUD: "a fake investment or money scam",
+            ThreatCategory.COERCION_EXTORTION: "a blackmail or sextortion threat",
+            ThreatCategory.VIOLENT_THREAT: "an aggressive physical danger threat",
+            ThreatCategory.SUSPICIOUS_URGENCY: "fake urgency designed to rush you into making a mistake",
+            ThreatCategory.MALICIOUS_LINK: "a dangerous web link",
+        }
+        category_label = friendly_names.get(primary_category, primary_category.value.replace('_', ' ').lower())
 
         if severity == RiskSeverity.CRITICAL:
             return (
-                f"CRITICAL RISK: Analysis identified explicit markers of {primary_category.value.replace('_', ' ').lower()}. "
-                f"{len(evidence)} threat indicator(s) were flagged. Do not comply with demands or send money. "
-                "Contact trusted local emergency services or law enforcement if in immediate danger."
+                f"DANGER: This message is extremely dangerous. It looks like {category_label}. "
+                "Do NOT reply, do NOT send any money, and do NOT click any links. "
+                "If you feel physically threatened, please call local emergency services (like 911) immediately."
             )
         elif severity == RiskSeverity.HIGH:
             return (
-                f"HIGH RISK: This message strongly matches known {primary_category.value.replace('_', ' ').lower()} attack patterns. "
-                "The sender appears to be attempting to extract credentials, money, or sensitive personal data under false pretenses."
+                f"HIGH RISK: This message is almost certainly a scam. It strongly matches {category_label}. "
+                "The sender is trying to trick you into giving away your passwords, banking information, or money."
             )
         elif severity == RiskSeverity.MEDIUM:
             return (
-                f"MODERATE SUSPICION: Several flags associated with {primary_category.value.replace('_', ' ').lower()} were detected, "
-                "including artificial urgency and unsolicited solicitation. Treat with extreme caution."
+                f"BE CAREFUL: This message looks suspicious. It has signs of {category_label}, "
+                "such as pushing you to act urgently before you have time to think. Treat it with caution."
             )
         else:
-            return "LOW RISK: Mild anomalies detected. Review sender authenticity before responding."
+            return "LOW RISK: A few small things look unusual. Double-check who sent this before you reply."
 
     def _build_recommendations(
         self,
@@ -283,8 +295,8 @@ class TextThreatAnalyzer:
             recs.append(
                 ProtectionRecommendation(
                     priority="ADVISORY",
-                    action="Verify unexpected requests out-of-band",
-                    rationale="Even benign-appearing messages can precede targeted social engineering."
+                    action="Double-check unexpected messages",
+                    rationale="Even if a message looks normal, if someone suddenly asks you for money or passwords, verify with them in person or by phone."
                 )
             )
             return recs
@@ -294,30 +306,30 @@ class TextThreatAnalyzer:
                 recs.append(
                     ProtectionRecommendation(
                         priority="URGENT",
-                        action="Notify emergency services immediately",
-                        rationale="Explicit threats to life or bodily safety warrant immediate law enforcement intervention."
+                        action="Call local police or emergency services (911) right now",
+                        rationale="Direct threats of violence or kidnapping are crimes and require real law enforcement help."
                     )
                 )
                 recs.append(
                     ProtectionRecommendation(
                         priority="URGENT",
-                        action="Preserve all message evidence and cease communication",
-                        rationale="Do not respond or antagonize the sender; retain exact timestamps and sender details."
+                        action="Save this message as evidence and stop replying",
+                        rationale="Do not argue with or answer the person. Keep the text as proof for police."
                     )
                 )
             elif category == ThreatCategory.COERCION_EXTORTION:
                 recs.append(
                     ProtectionRecommendation(
                         priority="URGENT",
-                        action="Do NOT pay the extortion demand or reply",
-                        rationale="Paying extortionists rarely deletes materials and reliably marks victims for repeated extortion."
+                        action="Do NOT pay any ransom or reply to them",
+                        rationale="Scammers send this exact same blackmail letter to millions of people. Paying them will only make them demand more money."
                     )
                 )
                 recs.append(
                     ProtectionRecommendation(
                         priority="RECOMMENDED",
-                        action="Change credentials on compromised accounts and enable hardware/authenticator 2FA",
-                        rationale="Extortionists often obtain passwords from old credential dumps to bluff webcam compromise."
+                        action="Change passwords on your accounts and turn on 2-Step Verification",
+                        rationale="Scammers usually get old passwords from old website data leaks to bluff that they hacked your camera."
                     )
                 )
 
@@ -325,15 +337,15 @@ class TextThreatAnalyzer:
             recs.append(
                 ProtectionRecommendation(
                     priority="URGENT",
-                    action="Do NOT click any provided links or enter passwords",
-                    rationale="Spoofed portals mimic login screens to harvest credentials and session tokens."
+                    action="Do NOT click any links or type your password",
+                    rationale="The link leads to a fake replica website designed to steal your username and password."
                 )
             )
             recs.append(
                 ProtectionRecommendation(
                     priority="RECOMMENDED",
-                    action="Navigate directly to the official provider's official website or app",
-                    rationale="If you suspect an issue with your account, verify by opening a clean browser session manually."
+                    action="Open your web browser and type the real website address yourself",
+                    rationale="If you think there might really be a problem with your account, go to the official website or app yourself to check."
                 )
             )
 
@@ -341,15 +353,15 @@ class TextThreatAnalyzer:
             recs.append(
                 ProtectionRecommendation(
                     priority="URGENT",
-                    action="Never send funds via wire transfer, cryptocurrency, or gift cards",
-                    rationale="These payment instruments are irreversible and standard vectors for fraudulent transactions."
+                    action="Never send money by wire transfer, gift cards, or crypto",
+                    rationale="Once you send gift cards or cryptocurrency, your money is gone permanently and cannot be refunded."
                 )
             )
             recs.append(
                 ProtectionRecommendation(
                     priority="RECOMMENDED",
-                    action="Contact your financial institution immediately if details were shared",
-                    rationale="Promptly alerting your bank can enable fraud locks on affected accounts."
+                    action="Call your bank immediately if you already sent money or card details",
+                    rationale="Your bank's fraud team can freeze your card or stop pending transfers if you call them quickly."
                 )
             )
 
@@ -357,8 +369,8 @@ class TextThreatAnalyzer:
             recs.append(
                 ProtectionRecommendation(
                     priority="RECOMMENDED",
-                    action="Contact the purported entity through an independently verified phone number",
-                    rationale="Never rely on phone numbers, links, or contact details provided within the suspicious message."
+                    action="Hang up and call the real company or government agency using an official number",
+                    rationale="Never trust the phone number or link inside the suspicious message. Search Google or check your real billing statement for the real number."
                 )
             )
 
@@ -366,8 +378,8 @@ class TextThreatAnalyzer:
             recs.append(
                 ProtectionRecommendation(
                     priority="RECOMMENDED",
-                    action="Submit embedded URLs to ScamShield AI Safe URL Inspector",
-                    rationale="Inspect the destination domain passively without triggering drive-by code execution."
+                    action="Check the web link safely in ScamShield AI",
+                    rationale="Our link checker inspects the address safely without opening the website on your phone or computer."
                 )
             )
 
@@ -375,8 +387,8 @@ class TextThreatAnalyzer:
         recs.append(
             ProtectionRecommendation(
                 priority="ADVISORY",
-                action="Block sender and report message via your messaging platform's spam report tool",
-                rationale="Helps global filtering networks suppress identical campaigns targeting others."
+                action="Block this sender on your phone or email",
+                rationale="Blocking them prevents them from sending more scam messages to you."
             )
         )
 

@@ -58,7 +58,7 @@ export const IncidentVaultView: React.FC = () => {
       const list = await apiService.listIncidents();
       setIncidents(list);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to retrieve incident vault records.');
+      setErrorMessage(err.message || 'Failed to load saved reports.');
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +88,7 @@ export const IncidentVaultView: React.FC = () => {
         setEnableLocationConsent(true);
       },
       (err) => {
-        setLocationError(`Location request denied or unavailable: ${err.message}`);
+        setLocationError(`Location permission denied or unavailable: ${err.message}`);
         setLocationLoading(false);
         setEnableLocationConsent(false);
       },
@@ -99,7 +99,7 @@ export const IncidentVaultView: React.FC = () => {
   const handleCreateIncident = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formTitle.trim() || !formDescription.trim() || !formEvidence.trim()) {
-      setErrorMessage('Please complete all required incident fields.');
+      setErrorMessage('Please fill in the title, description, and message proof.');
       return;
     }
     setIsLoading(true);
@@ -127,7 +127,7 @@ export const IncidentVaultView: React.FC = () => {
       setCapturedLocation(null);
       await fetchVault();
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to record incident.');
+      setErrorMessage(err.message || 'Failed to save report.');
     } finally {
       setIsLoading(false);
     }
@@ -139,7 +139,7 @@ export const IncidentVaultView: React.FC = () => {
       const exp = await apiService.exportIncidentReport(incidentId);
       setExportData(exp);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to compile official report.');
+      setErrorMessage(err.message || 'Failed to build official report.');
     } finally {
       setIsExporting(false);
     }
@@ -171,19 +171,19 @@ export const IncidentVaultView: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Top Banner Header */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-6 shadow-xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+      {/* Top Header Card */}
+      <div className="glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
           <div className="flex items-start gap-3">
-            <div className="p-2.5 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30 shrink-0">
+            <div className="p-3 rounded-2xl bg-red-500/15 text-red-400 border border-red-500/30 shrink-0">
               <ShieldAlert className="w-6 h-6" />
             </div>
             <div>
-              <h1 className="text-xl font-bold font-mono tracking-tight text-white flex items-center gap-2">
-                <span className="text-red-400">#</span> Incident Response & Cryptographic Evidence Vault
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
+                Saved Scam Reports & Evidence
               </h1>
-              <p className="text-xs text-slate-400 mt-1">
-                Seal unalterable digital evidence with SHA-256 digests, verify consent-based emergency location, and prepare standardized dispute dockets.
+              <p className="text-xs sm:text-sm text-slate-300 mt-1">
+                Preserve untampered proof of scams, threats, or financial fraud to share with your bank, credit card company, or police.
               </p>
             </div>
           </div>
@@ -193,29 +193,28 @@ export const IncidentVaultView: React.FC = () => {
               setErrorMessage(null);
               setShowCreateModal(true);
             }}
-            className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-mono font-bold flex items-center gap-2 transition-all shadow-md shadow-red-600/30 shrink-0 self-start sm:self-center"
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs sm:text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-red-600/30 shrink-0 self-start sm:self-center hover:scale-[1.02]"
           >
             <Plus className="w-4 h-4" />
-            Preserve New Incident
+            Save New Scam Report
           </button>
         </div>
 
-        {/* Safeguards Notice */}
-        <div className="p-3.5 rounded-lg bg-slate-950 border border-slate-800 flex items-start gap-3 text-xs text-slate-300 font-sans leading-relaxed">
+        {/* Clear Privacy & Safety Promise */}
+        <div className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 flex items-start gap-3 text-xs text-slate-300 font-sans leading-relaxed">
           <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <strong className="text-white font-mono text-[11px] uppercase tracking-wider block">
-              Official Reporting Boundary Safeguard:
+          <div className="space-y-0.5">
+            <strong className="text-white text-xs block">
+              100% Private & In Your Control:
             </strong>
             <p>
-              ScamShield AI compiles tamper-evident reports for legal filing (FTC, IC3, police, or your bank).
-              <strong> Reports are NEVER automatically transmitted to authorities</strong> without verified integration channels and explicit user sign-off.
+              ScamShield AI compiles your evidence into an official report. <strong>Nothing is ever sent to authorities automatically without your permission</strong>. You can download or copy the report and hand it directly to your bank or police department.
             </p>
           </div>
         </div>
 
         {errorMessage && (
-          <div className="p-3 rounded-lg bg-red-950/60 border border-red-500/50 text-red-200 text-xs font-mono flex items-center gap-2">
+          <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-200 text-xs flex items-center gap-2.5">
             <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
             <span>{errorMessage}</span>
           </div>
@@ -224,27 +223,27 @@ export const IncidentVaultView: React.FC = () => {
 
       {/* Incident Records Vault List */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between text-xs font-mono text-slate-400 uppercase tracking-wider">
+        <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-400">
           <span className="flex items-center gap-2">
-            <Lock className="w-3.5 h-3.5 text-red-400" />
-            Sealed Incident Records ({incidents.length})
+            <Lock className="w-4 h-4 text-emerald-400" />
+            Your Saved Reports ({incidents.length})
           </span>
-          <span className="text-slate-500 text-[11px]">Integrity Check: SHA-256 Enforced</span>
+          <span className="text-slate-500 font-normal">Tamper-Proof Digital Seal Active</span>
         </div>
 
         {isLoading && (
-          <div className="p-12 text-center space-y-2 bg-slate-900/60 border border-slate-800 rounded-xl">
-            <Loader2 className="w-7 h-7 text-red-400 animate-spin mx-auto" />
-            <p className="text-xs font-mono text-slate-400">Loading evidence vault records...</p>
+          <div className="p-16 text-center space-y-2 glass-panel rounded-3xl">
+            <Loader2 className="w-8 h-8 text-red-400 animate-spin mx-auto" />
+            <p className="text-xs font-medium text-slate-400">Loading your saved reports...</p>
           </div>
         )}
 
         {!isLoading && incidents.length === 0 && (
-          <div className="p-12 text-center space-y-3 bg-slate-900/60 border border-slate-800 rounded-xl">
-            <Lock className="w-8 h-8 text-slate-600 mx-auto" />
-            <p className="text-sm font-mono text-slate-300">Your Incident Vault is currently empty.</p>
-            <p className="text-xs text-slate-500 font-sans max-w-md mx-auto">
-              When you encounter a confirmed scam or extortion attempt, record it here to seal timestamps and generate official dispute bundles.
+          <div className="p-16 text-center space-y-3 glass-panel rounded-3xl">
+            <Lock className="w-10 h-10 text-slate-600 mx-auto" />
+            <p className="text-base font-bold text-white">No saved reports yet.</p>
+            <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+              Whenever you encounter a scam or threatening message, click "Save New Scam Report" above. It will lock the timestamps and evidence as official proof.
             </p>
           </div>
         )}
@@ -253,20 +252,20 @@ export const IncidentVaultView: React.FC = () => {
           incidents.map((inc) => (
             <div
               key={inc.incident_id}
-              className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4 hover:border-slate-700 transition-colors shadow-sm"
+              className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-6 space-y-4 hover:border-slate-700 transition-colors shadow-sm backdrop-blur"
             >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-850 pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800 font-bold uppercase tracking-wider flex items-center gap-1">
-                      <Lock className="w-2.5 h-2.5" />
-                      {inc.status}
+                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                      <Lock className="w-3 h-3" />
+                      Tamper-Proof Evidence Sealed
                     </span>
-                    <span className="text-xs font-mono text-slate-500">
-                      Captured: {new Date(inc.created_at).toLocaleString()}
+                    <span className="text-xs text-slate-400">
+                      Saved on: {new Date(inc.created_at).toLocaleDateString()} at {new Date(inc.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
-                  <h3 className="text-base font-bold font-mono text-white tracking-tight">
+                  <h3 className="text-lg font-bold text-white tracking-tight">
                     {inc.title}
                   </h3>
                 </div>
@@ -276,61 +275,61 @@ export const IncidentVaultView: React.FC = () => {
                   <button
                     onClick={() => handleExportReport(inc.incident_id)}
                     disabled={isExporting}
-                    className="px-3 py-1.5 rounded-lg bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/40 text-xs font-mono flex items-center gap-1.5 transition-colors"
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-2 transition-all shadow-md shadow-blue-600/25"
                   >
-                    <FileText className="w-3.5 h-3.5" />
-                    Export Report
+                    <FileText className="w-4 h-4" />
+                    View & Export Report
                   </button>
                 </div>
               </div>
 
-              <p className="text-xs text-slate-300 font-sans leading-relaxed">{inc.description}</p>
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">{inc.description}</p>
 
-              {/* Cryptographic SHA-256 Evidence Seal */}
-              <div className="p-3 bg-slate-950 border border-slate-850 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
+              {/* Digital Proof Fingerprint */}
+              <div className="p-3.5 bg-slate-950/70 border border-slate-850 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                 <div className="flex items-center gap-2 overflow-hidden">
-                  <Hash className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                  <span className="text-slate-500 shrink-0">SHA-256 Digest:</span>
-                  <span className="text-blue-300 font-bold truncate">{inc.evidence_sha256}</span>
+                  <Hash className="w-4 h-4 text-blue-400 shrink-0" />
+                  <span className="text-slate-400 font-semibold shrink-0">Tamper-Proof Fingerprint:</span>
+                  <span className="text-blue-300 font-mono text-[11px] truncate">{inc.evidence_sha256}</span>
                 </div>
                 <button
                   onClick={() => handleCopyText(inc.evidence_sha256, 'hash', inc.incident_id)}
-                  className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-750 text-slate-300 text-[11px] shrink-0 self-start sm:self-auto flex items-center gap-1 transition-colors"
+                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs shrink-0 self-start sm:self-auto flex items-center gap-1.5 transition-colors font-medium"
                 >
                   {copiedHash === inc.incident_id ? (
                     <>
-                      <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                       Copied!
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3 h-3" />
-                      Copy Hash
+                      <Copy className="w-3.5 h-3.5 text-slate-400" />
+                      Copy Fingerprint
                     </>
                   )}
                 </button>
               </div>
 
-              {/* Badges / Context row */}
-              <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-slate-400 pt-1">
+              {/* Context row */}
+              <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 pt-1">
                 {inc.sender_information && (
-                  <div className="flex items-center gap-1">
-                    <span className="text-slate-500">Source:</span>
-                    <span className="text-slate-200">{inc.sender_information}</span>
+                  <div>
+                    <span className="text-slate-500">Sent by:</span>{' '}
+                    <span className="text-white font-medium">{inc.sender_information}</span>
                   </div>
                 )}
                 {inc.financial_loss_amount !== null && inc.financial_loss_amount !== undefined && (
-                  <div className="flex items-center gap-1">
-                    <span className="text-slate-500">Loss:</span>
+                  <div>
+                    <span className="text-slate-500">Financial Loss:</span>{' '}
                     <span className="text-red-400 font-bold">
                       ${inc.financial_loss_amount.toFixed(2)} USD
                     </span>
                   </div>
                 )}
                 {inc.consent_location && inc.consent_location.user_consent_granted && (
-                  <div className="flex items-center gap-1 text-emerald-400">
-                    <MapPin className="w-3 h-3" />
-                    <span>Consent-Verified GPS Attached</span>
+                  <div className="flex items-center gap-1.5 text-emerald-400 font-medium">
+                    <MapPin className="w-3.5 h-3.5" />
+                    <span>Location Context Attached</span>
                   </div>
                 )}
               </div>
@@ -340,102 +339,102 @@ export const IncidentVaultView: React.FC = () => {
 
       {/* Create Incident Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl max-w-2xl w-full p-6 space-y-5 my-8 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-[#0B0F19] border border-white/10 rounded-3xl max-w-2xl w-full p-6 sm:p-8 space-y-5 my-8 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+              <div className="flex items-center gap-2.5">
                 <Lock className="w-5 h-5 text-red-400" />
-                <h2 className="text-lg font-mono font-bold text-white">Record & Seal Incident Evidence</h2>
+                <h2 className="text-lg font-bold text-white">Save & Lock Scam Evidence</h2>
               </div>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-white p-1 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleCreateIncident} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-mono text-slate-300 font-medium">Incident Title *</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-200">What happened? (Short title) *</label>
                 <input
                   type="text"
                   required
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
-                  placeholder="e.g. Urgent Payroll Wire Impersonation SMS"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-red-500"
+                  placeholder="e.g. Fake Bank of America Text asking for login"
+                  className="w-full glass-input rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-mono text-slate-300">Category *</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-200">Type of Scam *</label>
                   <select
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value as ThreatCategory)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-red-500"
+                    className="w-full glass-input rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none"
                   >
-                    <option value="PHISHING">Phishing / Credential Harvesting</option>
-                    <option value="FINANCIAL_FRAUD">Financial Fraud & Scams</option>
-                    <option value="COERCION_EXTORTION">Coercion & Extortion</option>
-                    <option value="IMPERSONATION">Authority / Brand Impersonation</option>
-                    <option value="VIOLENT_THREAT">Violent Threat Protocol</option>
+                    <option value="PHISHING">Fake Login Portal (Phishing)</option>
+                    <option value="FINANCIAL_FRAUD">Money or Investment Scam</option>
+                    <option value="COERCION_EXTORTION">Webcam Blackmail / Extortion</option>
+                    <option value="IMPERSONATION">Fake Police or IRS Agent</option>
+                    <option value="VIOLENT_THREAT">Threat to Physical Safety</option>
                   </select>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-mono text-slate-300">Harm Severity *</label>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-200">Danger Level *</label>
                   <select
                     value={formSeverity}
                     onChange={(e) => setFormSeverity(e.target.value as RiskSeverity)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-red-500"
+                    className="w-full glass-input rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none"
                   >
-                    <option value="CRITICAL">Critical Severity</option>
-                    <option value="HIGH">High Severity</option>
-                    <option value="MEDIUM">Medium Severity</option>
-                    <option value="LOW">Low Severity</option>
+                    <option value="CRITICAL">Extremely Dangerous (Immediate Action)</option>
+                    <option value="HIGH">High Risk Scam</option>
+                    <option value="MEDIUM">Suspicious / Caution</option>
+                    <option value="LOW">Low Risk</option>
                   </select>
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-mono text-slate-300">Incident Statement / Narrative *</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-200">What happened? Describe in your own words *</label>
                 <textarea
                   required
                   rows={3}
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
-                  placeholder="Describe how contact occurred, what instructions were given, and what steps you took..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs font-sans text-slate-200 focus:outline-none focus:border-red-500"
+                  placeholder="Explain what the person said, how they contacted you, and if you replied or gave any info..."
+                  className="w-full glass-input rounded-xl p-3 text-xs text-white focus:outline-none"
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-mono text-slate-300">Preserved Raw Digital Evidence *</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-200">Paste the text message, email, or link (Your Proof) *</label>
                 <textarea
                   required
                   rows={4}
                   value={formEvidence}
                   onChange={(e) => setFormEvidence(e.target.value)}
-                  placeholder="Paste the exact message text, URL, email headers, or crypto wallet address (SHA-256 digest will seal this content)..."
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-xs font-mono text-slate-200 focus:outline-none focus:border-red-500"
+                  placeholder="Paste the exact words, links, phone number, or email headers here. A tamper-proof SHA-256 seal will lock this content."
+                  className="w-full glass-input rounded-xl p-3 text-xs font-mono text-white focus:outline-none"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-mono text-slate-300">Sender / Contact Handle</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-slate-300">Who sent it? (Phone number or email)</label>
                   <input
                     type="text"
                     value={formSender}
                     onChange={(e) => setFormSender(e.target.value)}
-                    placeholder="e.g. +1-800-555-0199 or fraud@spoofed.com"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-red-500"
+                    placeholder="e.g. +1-800-555-0199 or alerts@fake-bank.com"
+                    className="w-full glass-input rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-mono text-slate-300">Financial Loss ($ USD, if any)</label>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-slate-300">Money Lost ($ USD, if any)</label>
                   <input
                     type="number"
                     step="0.01"
@@ -443,45 +442,44 @@ export const IncidentVaultView: React.FC = () => {
                     value={formLoss}
                     onChange={(e) => setFormLoss(e.target.value)}
                     placeholder="0.00"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-200 focus:outline-none focus:border-red-500"
+                    className="w-full glass-input rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none"
                   />
                 </div>
               </div>
 
-              {/* Explicit Consent-Based Geolocation Sharing Box */}
-              <div className="p-3.5 rounded-lg bg-slate-950 border border-slate-800 space-y-2">
+              {/* Location Sharing Box */}
+              <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono font-bold text-slate-200 flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-emerald-400" />
-                    Consent-Based Location Context (Optional)
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-emerald-400" />
+                    Attach My Location (Optional)
                   </span>
                   {!capturedLocation ? (
                     <button
                       type="button"
                       onClick={handleRequestLocation}
                       disabled={locationLoading}
-                      className="px-2.5 py-1 rounded bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 text-xs font-mono border border-emerald-500/40 flex items-center gap-1 transition-colors"
+                      className="px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 text-xs font-semibold border border-emerald-500/30 flex items-center gap-1.5 transition-colors"
                     >
-                      {locationLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <MapPin className="w-3 h-3" />}
-                      Request GPS Location
+                      {locationLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MapPin className="w-3.5 h-3.5" />}
+                      Attach GPS Location
                     </button>
                   ) : (
-                    <span className="text-[11px] font-mono text-emerald-400 font-bold flex items-center gap-1">
+                    <span className="text-xs text-emerald-400 font-bold flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      Verified Coordinates Attached
+                      Location Attached
                     </span>
                   )}
                 </div>
 
-                <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-                  Your physical location is <strong>never estimated from IP addresses or links</strong>.
-                  Only attach GPS coordinates if filing a report involving immediate danger or local jurisdiction filing.
+                <p className="text-[11px] text-slate-400 leading-relaxed font-sans">
+                  We <strong>never track your location automatically</strong>. Only attach this if you are filing a police report for local jurisdiction help.
                 </p>
 
                 {capturedLocation && (
-                  <div className="text-[10px] font-mono text-slate-400 bg-black/40 p-2 rounded border border-slate-850 flex items-center justify-between">
+                  <div className="text-[11px] text-slate-300 bg-black/40 p-2.5 rounded-xl border border-slate-850 flex items-center justify-between">
                     <span>
-                      Lat: {capturedLocation.latitude.toFixed(4)}, Lon: {capturedLocation.longitude.toFixed(4)} (±{capturedLocation.accuracy_meters?.toFixed(0)}m)
+                      Latitude: {capturedLocation.latitude.toFixed(4)}, Longitude: {capturedLocation.longitude.toFixed(4)}
                     </span>
                     <button
                       type="button"
@@ -489,7 +487,7 @@ export const IncidentVaultView: React.FC = () => {
                         setCapturedLocation(null);
                         setEnableLocationConsent(false);
                       }}
-                      className="text-red-400 hover:text-red-300"
+                      className="text-red-400 hover:text-red-300 text-xs font-semibold"
                     >
                       Remove
                     </button>
@@ -497,25 +495,25 @@ export const IncidentVaultView: React.FC = () => {
                 )}
 
                 {locationError && (
-                  <p className="text-[11px] font-mono text-red-400">{locationError}</p>
+                  <p className="text-xs text-red-400">{locationError}</p>
                 )}
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-white/5">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-mono"
+                  className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="px-5 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-mono font-bold flex items-center gap-1.5 shadow-md shadow-red-600/30"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-lg shadow-red-600/30"
                 >
-                  <Lock className="w-3.5 h-3.5" />
-                  Seal & Preserve Evidence
+                  <Lock className="w-4 h-4" />
+                  Save & Lock This Evidence
                 </button>
               </div>
             </form>
@@ -525,81 +523,68 @@ export const IncidentVaultView: React.FC = () => {
 
       {/* Official Export Modal */}
       {exportData && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl max-w-3xl w-full p-6 space-y-5 my-8 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-[#0B0F19] border border-white/10 rounded-3xl max-w-3xl w-full p-6 sm:p-8 space-y-6 my-8 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-white/5 pb-4">
+              <div>
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
                   <FileText className="w-5 h-5 text-blue-400" />
-                  <h2 className="text-lg font-mono font-bold text-white">Standardized Dispute Docket</h2>
-                </div>
-                <span className="text-xs font-mono text-slate-400">
-                  Docket: <strong>{exportData.docket_number}</strong>
+                  Official Scam Dispute Report
+                </h2>
+                <span className="text-xs text-slate-400">
+                  Case Docket: <strong>{exportData.docket_number}</strong>
                 </span>
               </div>
               <button
                 onClick={() => setExportData(null)}
-                className="text-slate-400 hover:text-white"
+                className="text-slate-400 hover:text-white p-1 rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Verification Signature & Transmission Status */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
-              <div className="p-3 bg-slate-950 border border-slate-800 rounded-lg">
-                <span className="text-slate-500 block text-[10px]">VERIFICATION SIGNATURE</span>
-                <span className="text-blue-300 font-bold truncate block">
-                  {exportData.verification_signature}
-                </span>
+            {/* Status callout */}
+            <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between text-xs">
+              <div className="space-y-0.5">
+                <span className="text-slate-400 block text-[11px] uppercase font-bold">Report Status</span>
+                <span className="text-emerald-400 font-bold text-sm">✓ Sealed & Ready for Official Filing</span>
               </div>
-              <div className="p-3 bg-slate-950 border border-slate-800 rounded-lg">
-                <span className="text-slate-500 block text-[10px]">TRANSMISSION STATUS</span>
-                <span className="text-amber-400 font-bold block">
-                  {exportData.transmission_status}
-                </span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleCopyText(exportData.markdown_report, 'report')}
+                  className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-750 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors border border-slate-700"
+                >
+                  {copiedReport ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                      <span>Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4 text-slate-400" />
+                      <span>Copy Report Text</span>
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={handleDownloadJson}
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-blue-600/30"
+                >
+                  <Download className="w-4 h-4" />
+                  Download File
+                </button>
               </div>
             </div>
 
-            {/* Markdown Report View */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-xs font-mono text-slate-400">
-                <span>Official Report Markdown:</span>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleCopyText(exportData.markdown_report, 'report')}
-                    className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-750 text-slate-200 text-xs font-mono flex items-center gap-1 border border-slate-700"
-                  >
-                    {copiedReport ? (
-                      <>
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        Copied!
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        Copy Markdown
-                      </>
-                    )}
-                  </button>
-                  <button
-                    onClick={handleDownloadJson}
-                    className="px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono flex items-center gap-1 font-semibold"
-                  >
-                    <Download className="w-3.5 h-3.5" />
-                    Download JSON Bundle
-                  </button>
-                </div>
-              </div>
-              <pre className="p-4 bg-slate-950 border border-slate-800 rounded-lg text-xs font-mono text-slate-300 max-h-72 overflow-y-auto whitespace-pre-wrap leading-relaxed">
-                {exportData.markdown_report}
-              </pre>
-            </div>
+            {/* Formatted Report View */}
+            <pre className="p-5 bg-slate-950 rounded-2xl border border-slate-850 text-xs font-mono text-slate-200 max-h-80 overflow-y-auto whitespace-pre-wrap leading-relaxed">
+              {exportData.markdown_report}
+            </pre>
 
-            <div className="p-3 bg-blue-950/30 border border-blue-900/50 rounded text-xs text-blue-200/90 font-sans leading-relaxed">
-              <strong>Official Filing Guide:</strong> Copy or download this docket and submit it to
-              your bank fraud department, the Federal Trade Commission at <strong>reportfraud.ftc.gov</strong>,
-              or the FBI Internet Crime Complaint Center at <strong>ic3.gov</strong>.
+            <div className="p-4 bg-blue-500/10 border border-blue-500/25 rounded-2xl text-xs text-blue-200 font-sans leading-relaxed">
+              <strong>How to use this report:</strong> You can copy or download this file to present directly
+              to your bank's fraud department, file with the Federal Trade Commission at <strong>reportfraud.ftc.gov</strong>,
+              or hand to local police as proof of the incident.
             </div>
           </div>
         </div>

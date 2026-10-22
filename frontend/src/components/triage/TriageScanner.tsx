@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import {
   AlertTriangle,
+  ArrowRight,
   FileText,
   Globe,
   Loader2,
   RotateCcw,
-  Send,
+  Search,
   Sparkles,
 } from 'lucide-react';
 import { TextAnalysisResult, UrlAnalysisResult } from '../../types';
@@ -14,48 +15,49 @@ import { RiskScorecard } from './RiskScorecard';
 
 const SAMPLE_PRESETS = [
   {
-    label: 'Bank Phishing SMS',
+    icon: '🏦',
+    label: 'Fake Bank SMS',
     type: 'text' as const,
     content:
       'SECURITY ALERT: Unauthorized login attempt detected on your bank account. Your card has been temporarily locked. Verify your credentials immediately at https://secure-bank-verify.net/restore or your account will be closed within 24 hours.',
     sender: '+1 (800) 555-0199',
   },
   {
-    label: 'Crypto Doubler Fraud',
+    icon: '💸',
+    label: 'Crypto Doubler',
     type: 'text' as const,
     content:
       'Guaranteed returns! Send 0.1 BTC to our high-yield automated crypto trading bot and double your bitcoin in 24 hours! Visit https://crypto-doubler-free.top to claim your bonus.',
     sender: 'crypto-vip-alerts@telegram',
   },
   {
-    label: 'Webcam Sextortion',
+    icon: '📷',
+    label: 'Webcam Blackmail',
     type: 'text' as const,
     content:
       'I have recorded you with your webcam watching dirty videos. I have all your contacts. Pay $800 in bitcoin to bc1qar0srrr7xfkvy5l643lydnw9re59gtzzwf5mdq within 48 hours or I will leak your video to everyone.',
     sender: 'blackhat-ops@anonymous.org',
   },
   {
-    label: 'IRS Impersonation',
+    icon: '🏛️',
+    label: 'IRS Tax Threat',
     type: 'text' as const,
     content:
       'Internal Revenue Service: Active warrant for your arrest has been issued due to federal tax tax fraud. Call our legal department immediately at 800-555-0144 to settle before law enforcement is dispatched.',
     sender: 'irs-enforcement@dept.gov.notice-mail.com',
   },
   {
-    label: 'Homoglyph URL Spoof',
+    icon: '🔗',
+    label: 'Fake PayPal Link',
     type: 'url' as const,
     url: 'https://p\u0430ypal.com/restore-account', // Cyrillic 'а'
   },
   {
-    label: 'Direct IP Login URL',
-    type: 'url' as const,
-    url: 'http://192.168.1.100/admin-login.php',
-  },
-  {
-    label: 'Benign Customer Email',
+    icon: '☕',
+    label: 'Safe Real Message',
     type: 'text' as const,
     content:
-      'Hi Alex, thank you for sending over the quarterly slides. Let us sync on Tuesday morning at 10am to go over the final deck.',
+      'Hi Alex, thank you for sending over the project slides. Let us sync on Tuesday morning at 10am to go over the final notes.',
     sender: 'sarah.miller@acme-corp.com',
   },
 ];
@@ -78,7 +80,7 @@ export const TriageScanner: React.FC<TriageScannerProps> = ({ onSimulateScenario
   const handleTextScan = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!textContent.trim()) {
-      setErrorMessage('Please paste or type suspicious message text before running analysis.');
+      setErrorMessage('Please paste the suspicious text or email message first.');
       return;
     }
     setErrorMessage(null);
@@ -90,7 +92,7 @@ export const TriageScanner: React.FC<TriageScannerProps> = ({ onSimulateScenario
       });
       setTextResult(res);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to analyze text content.');
+      setErrorMessage(err.message || 'Failed to check this text.');
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +101,7 @@ export const TriageScanner: React.FC<TriageScannerProps> = ({ onSimulateScenario
   const handleUrlScan = async (urlToScan?: string) => {
     const targetUrl = urlToScan || urlInput;
     if (!targetUrl.trim()) {
-      setErrorMessage('Please provide a valid URL to analyze.');
+      setErrorMessage('Please type or paste a website link to check.');
       return;
     }
     setErrorMessage(null);
@@ -110,7 +112,7 @@ export const TriageScanner: React.FC<TriageScannerProps> = ({ onSimulateScenario
       setActiveTab('url');
       if (urlToScan) setUrlInput(urlToScan);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to inspect URL.');
+      setErrorMessage(err.message || 'Failed to inspect this link.');
     } finally {
       setIsLoading(false);
     }
@@ -140,125 +142,135 @@ export const TriageScanner: React.FC<TriageScannerProps> = ({ onSimulateScenario
   };
 
   return (
-    <div className="space-y-8">
-      {/* Input Section Card */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-6 shadow-xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
-          <div>
-            <h1 className="text-xl font-bold font-mono tracking-tight text-white flex items-center gap-2">
-              <span className="text-blue-500">#</span> Threat Triage Console
-            </h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Safely inspect messages and analyze domains without executing code or triggering tracking pixels.
-            </p>
-          </div>
+    <div className="space-y-10 animate-fade-in">
+      {/* Hero Title Section */}
+      <div className="text-center max-w-2xl mx-auto space-y-3 pt-2">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs font-semibold">
+          <Sparkles className="w-3.5 h-3.5" />
+          <span>Simple, Fast & 100% Safe Verification</span>
+        </div>
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">
+          Is this message or website a scam?
+        </h1>
+        <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-sans">
+          Paste any suspicious message, email, or web link below. ScamShield AI will tell you in plain English if it is safe or a trick.
+        </p>
+      </div>
 
-          {/* Mode Switcher */}
-          <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 self-start sm:self-center font-mono text-xs">
+      {/* Main Glass Input Card */}
+      <div className="glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+        {/* Simple Tabs */}
+        <div className="flex items-center justify-between gap-4 border-b border-white/5 pb-4">
+          <div className="flex items-center gap-2 p-1 rounded-xl bg-slate-950/80 border border-slate-800">
             <button
               onClick={() => {
                 setActiveTab('text');
                 setErrorMessage(null);
               }}
-              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
                 activeTab === 'text'
-                  ? 'bg-blue-600 text-white font-semibold'
+                  ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <FileText className="w-3.5 h-3.5" />
-              Analyze Text
+              <FileText className="w-4 h-4" />
+              <span>Check Text or Email</span>
             </button>
             <button
               onClick={() => {
                 setActiveTab('url');
                 setErrorMessage(null);
               }}
-              className={`px-3 py-1.5 rounded-md flex items-center gap-1.5 transition-all ${
+              className={`px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${
                 activeTab === 'url'
-                  ? 'bg-blue-600 text-white font-semibold'
+                  ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Globe className="w-3.5 h-3.5" />
-              Safe URL Inspector
+              <Globe className="w-4 h-4" />
+              <span>Check a Web Link</span>
             </button>
           </div>
+
+          <span className="text-xs text-slate-400 hidden sm:block">
+            {activeTab === 'text' ? 'Detects fake logins & blackmail' : 'Checks for fake lookalike websites safely'}
+          </span>
         </div>
 
-        {/* Threat Presets / Test Fixtures */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-1.5 text-xs text-slate-400 font-mono">
-            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-            <span>Load Curated Test Cases:</span>
-          </div>
+        {/* Quick Sample Examples */}
+        <div className="space-y-2.5">
+          <span className="text-xs text-slate-400 font-semibold flex items-center gap-1.5">
+            <span>Or try an example to see how it works:</span>
+          </span>
           <div className="flex flex-wrap gap-2">
             {SAMPLE_PRESETS.map((p, idx) => (
               <button
                 key={idx}
                 onClick={() => handleSelectPreset(p)}
-                className="text-xs font-mono px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-750 text-slate-300 hover:text-white border border-slate-700 transition-colors"
+                className="text-xs px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700 transition-all flex items-center gap-1.5 shadow-sm"
               >
-                {p.label}
+                <span>{p.icon}</span>
+                <span className="font-medium">{p.label}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Text Input Form */}
+        {/* Text Form */}
         {activeTab === 'text' && (
           <form onSubmit={handleTextScan} className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-mono text-slate-300 font-medium flex items-center justify-between">
-                <span>Suspicious Message / Email Body / Chat Text:</span>
-                <span className="text-slate-500">{textContent.length}/10,000 characters</span>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-300 flex items-center justify-between">
+                <span>Paste the suspicious message here:</span>
+                <span className="text-slate-500 font-normal">{textContent.length} characters</span>
               </label>
               <textarea
                 value={textContent}
                 onChange={(e) => setTextContent(e.target.value)}
-                rows={5}
-                placeholder="Paste the suspicious SMS, phishing email, social media message, or extortion demand here..."
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500 font-mono transition-colors"
+                rows={4}
+                placeholder="Paste the SMS text, WhatsApp message, email, or DM here..."
+                className="w-full glass-input rounded-2xl p-4 text-sm text-slate-100 placeholder-slate-500 focus:outline-none transition-all leading-relaxed"
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-mono text-slate-400">
-                  Sender Handle / Email / Phone (Optional):
+                <label className="text-xs font-medium text-slate-400">
+                  Who sent it? (Optional phone number, email, or handle)
                 </label>
                 <input
                   type="text"
                   value={senderHint}
                   onChange={(e) => setSenderHint(e.target.value)}
-                  placeholder="e.g. support@verify-mail.com, +1-800-555-0199"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500"
+                  placeholder="e.g. +1-800-555-0199 or support@verify-account.com"
+                  className="w-full glass-input rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none"
                 />
               </div>
 
-              <div className="flex items-end justify-end gap-2 pt-2 sm:pt-0">
+              <div className="flex items-end justify-end gap-2.5 pt-2 sm:pt-0">
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-mono border border-slate-700 flex items-center gap-1.5 transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold border border-slate-800 flex items-center gap-1.5 transition-colors"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
-                  Reset
+                  Clear
                 </button>
                 <button
                   type="submit"
                   disabled={isLoading || !textContent.trim()}
-                  className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-bold flex items-center gap-2 transition-all shadow-md shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02]"
                 >
                   {isLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      Analyzing Text...
+                      Checking for scams...
                     </>
                   ) : (
                     <>
-                      <Send className="w-4 h-4" />
-                      Run Security Triage
+                      <Search className="w-4 h-4" />
+                      Check This For Me
+                      <ArrowRight className="w-4 h-4" />
                     </>
                   )}
                 </button>
@@ -267,59 +279,60 @@ export const TriageScanner: React.FC<TriageScannerProps> = ({ onSimulateScenario
           </form>
         )}
 
-        {/* URL Input Form */}
+        {/* URL Form */}
         {activeTab === 'url' && (
           <div className="space-y-4">
-            <div className="space-y-1.5">
-              <label className="text-xs font-mono text-slate-300 font-medium">
-                Target URL or Domain to Inspect Safely:
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-300">
+                Paste the web address or link here:
               </label>
-              <div className="flex flex-col sm:flex-row gap-2">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <input
                   type="text"
                   value={urlInput}
                   onChange={(e) => setUrlInput(e.target.value)}
-                  placeholder="e.g. https://paypal-security-check.xyz/login or http://192.168.1.1/admin"
-                  className="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm font-mono text-slate-200 placeholder-slate-600 focus:outline-none focus:border-blue-500"
+                  placeholder="e.g. https://pаypal.com or http://192.168.1.1/login"
+                  className="flex-1 glass-input rounded-2xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none"
                 />
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={handleReset}
-                    className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-750 text-slate-300 text-xs font-mono border border-slate-700 flex items-center gap-1 transition-colors"
+                    className="px-3.5 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs border border-slate-800 flex items-center gap-1 transition-colors"
                   >
-                    <RotateCcw className="w-3.5 h-3.5" />
+                    <RotateCcw className="w-4 h-4" />
                   </button>
                   <button
                     type="button"
                     onClick={() => handleUrlScan()}
                     disabled={isLoading || !urlInput.trim()}
-                    className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-mono font-bold flex items-center gap-2 transition-all shadow-md shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs sm:text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-blue-600/30 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02]"
                   >
                     {isLoading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Inspecting...
+                        Checking link...
                       </>
                     ) : (
                       <>
                         <Globe className="w-4 h-4" />
-                        Inspect URL Safely
+                        Inspect Link Safely
+                        <ArrowRight className="w-4 h-4" />
                       </>
                     )}
                   </button>
                 </div>
               </div>
             </div>
-            <p className="text-[11px] text-slate-500 font-mono">
-              Passive inspection only. The target web server is never contacted or requested.
+            <p className="text-xs text-slate-400">
+              🔒 <strong>100% Safe Check:</strong> ScamShield AI checks the link structure and safety records without ever opening the destination website on your phone or computer.
             </p>
           </div>
         )}
 
-        {/* Error Notification Alert */}
+        {/* Error notification */}
         {errorMessage && (
-          <div className="p-3.5 rounded-lg bg-red-950/60 border border-red-500/50 text-red-200 text-xs font-mono flex items-center gap-2">
+          <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-200 text-xs flex items-center gap-2.5">
             <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
             <span>{errorMessage}</span>
           </div>

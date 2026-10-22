@@ -71,27 +71,28 @@ export const App: React.FC = () => {
         {activeTab === 'incident' && <IncidentVaultView />}
       </main>
 
-      {/* Security Operations Footer */}
-      <footer className="border-t border-slate-800/80 bg-slate-950 py-6 text-xs text-slate-500 font-mono">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      {/* Modern Friendly Footer */}
+      <footer className="border-t border-white/5 bg-[#080C14] py-8 text-xs text-slate-400">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-blue-500" />
-            <span className="text-slate-400 font-bold">ScamShield AI</span>
-            <span>&bull; Defensive Threat Operations</span>
+            <Shield className="w-4 h-4 text-blue-400" />
+            <span className="text-white font-bold">ScamShield AI</span>
+            <span className="text-slate-500">&bull;</span>
+            <span>Protecting everyday people from online scams</span>
           </div>
 
-          <div className="flex items-center gap-6 text-[11px] text-slate-400">
-            <span className="flex items-center gap-1">
-              <EyeOff className="w-3.5 h-3.5 text-emerald-400" />
-              Zero Log Retention
+          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400">
+            <span className="flex items-center gap-1.5">
+              <EyeOff className="w-4 h-4 text-emerald-400" />
+              100% Private (No Log Retention)
             </span>
-            <span className="flex items-center gap-1">
-              <Lock className="w-3.5 h-3.5 text-blue-400" />
-              Non-Executing Analysis
+            <span className="flex items-center gap-1.5">
+              <Lock className="w-4 h-4 text-blue-400" />
+              Never Opens Suspicious Links
             </span>
-            <span className="flex items-center gap-1">
-              <Cpu className="w-3.5 h-3.5 text-indigo-400" />
-              Decoupled Severity & Confidence
+            <span className="flex items-center gap-1.5">
+              <Cpu className="w-4 h-4 text-indigo-400" />
+              Real AI Threat Detection
             </span>
           </div>
         </div>

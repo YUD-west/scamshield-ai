@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Shield, EyeOff, Lock, Cpu } from 'lucide-react';
+import { EyeOff, Lock, Cpu } from 'lucide-react';
 import { Header } from './components/common/Header';
 import { TriageScanner } from './components/triage/TriageScanner';
 import { RiskSimulatorView } from './components/simulation/RiskSimulatorView';
@@ -46,7 +46,7 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0B0F19] text-slate-100 font-sans">
+    <div className="min-h-screen flex flex-col text-foreground font-sans">
       {/* Header Bar */}
       <Header
         health={health}
@@ -56,7 +56,7 @@ export const App: React.FC = () => {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 mx-auto max-w-5xl w-full px-4 pb-20">
         {activeTab === 'triage' && (
           <TriageScanner onSimulateScenario={handleTriggerSimulation} />
         )}
@@ -71,27 +71,27 @@ export const App: React.FC = () => {
         {activeTab === 'incident' && <IncidentVaultView />}
       </main>
 
-      {/* Modern Friendly Footer */}
-      <footer className="border-t border-white/5 bg-[#080C14] py-8 text-xs text-slate-400">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+      {/* Friendly Footer */}
+      <footer className="border-t border-border bg-black/20 py-8 text-xs text-muted-foreground mt-auto">
+        <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-blue-400" />
-            <span className="text-white font-bold">ScamShield AI</span>
-            <span className="text-slate-500">&bull;</span>
+            <span>🛡️</span>
+            <span className="text-foreground font-bold">ScamShield AI</span>
+            <span>&bull;</span>
             <span>Protecting everyday people from online scams</span>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-400">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-muted-foreground">
             <span className="flex items-center gap-1.5">
-              <EyeOff className="w-4 h-4 text-emerald-400" />
+              <EyeOff className="w-3.5 h-3.5 text-safe" />
               100% Private (No Log Retention)
             </span>
             <span className="flex items-center gap-1.5">
-              <Lock className="w-4 h-4 text-blue-400" />
+              <Lock className="w-3.5 h-3.5 text-safe" />
               Never Opens Suspicious Links
             </span>
             <span className="flex items-center gap-1.5">
-              <Cpu className="w-4 h-4 text-indigo-400" />
+              <Cpu className="w-3.5 h-3.5 text-safe" />
               Real AI Threat Detection
             </span>
           </div>

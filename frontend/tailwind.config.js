@@ -7,16 +7,31 @@ export default {
   theme: {
     extend: {
       colors: {
-        soc: {
-          bg: "#0B0F19",
-          card: "#111827",
-          border: "#1F2937",
-          muted: "#9CA3AF",
-          accent: "#3B82F6",
-          danger: "#EF4444",
-          warning: "#F59E0B",
-          success: "#10B981",
-        }
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        card: "var(--card)",
+        popover: "var(--popover)",
+        primary: {
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
+        },
+        secondary: {
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
+        },
+        muted: {
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
+        },
+        safe: "var(--safe)",
+        caution: "var(--caution)",
+        danger: "var(--danger)",
+        border: "var(--border)",
+        input: "var(--input)",
+      },
+      borderRadius: {
+        '2xl': '1rem',
+        '3xl': '1.5rem',
       }
     },
   },

@@ -1,50 +1,132 @@
 import React, { useEffect, useState } from 'react';
-import {
-  AlertCircle,
-  AlertTriangle,
-  ArrowRight,
-  CheckCircle2,
-  HelpCircle,
-  Loader2,
-  Play,
-  RotateCcw,
-  Shield,
-  ShieldAlert,
-  Sparkles,
-} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { SimulationResponse, ThreatCategory } from '../../types';
 import { apiService } from '../../services/api';
 
-const SCENARIO_PRESETS: { icon: string; label: string; category: ThreatCategory; desc: string }[] = [
+const SCENARIOS: { icon: string; label: string; category: ThreatCategory; defaultStages: { t: string; d: string; sign: string; stop: string }[] }[] = [
   {
-    icon: '🎣',
-    label: 'Fake Bank Login',
+    icon: '🏦',
+    label: 'Fake Bank SMS',
     category: 'PHISHING',
-    desc: 'How scammers send fake text alerts to lure you to lookalike login portals.',
+    defaultStages: [
+      {
+        t: '1. The Hook',
+        d: "A scary text arrives: 'Your bank account is locked due to unusual activity. Verify now!'",
+        sign: 'Urgency, threats of account closure, and rushed language.',
+        stop: 'Pause. Real banks never ask you to verify logins via an SMS link.',
+      },
+      {
+        t: '2. The Fake Page',
+        d: 'The link opens a fake website that looks almost identical to your real bank login portal.',
+        sign: "Odd web address like chase-secure.xyz or paypa1.com with typo letters.",
+        stop: 'Look closely at the browser address bar. Type your bank website manually.',
+      },
+      {
+        t: '3. The Steal',
+        d: 'You are asked to enter your username, password, and the two-factor SMS code sent to your phone.',
+        sign: 'Requests for one-time passcodes (OTP) or security PINs.',
+        stop: 'Never share security codes. Banks will never ask for them.',
+      },
+      {
+        t: '4. The Damage',
+        d: 'The scammer logs into your real bank account and drains your funds or initiates wire transfers.',
+        sign: 'Unknown transfer notifications or sudden password reset emails.',
+        stop: 'Call your bank immediately using the trusted phone number on the back of your card.',
+      },
+    ],
   },
   {
     icon: '💸',
-    label: 'Get-Rich Crypto Scam',
+    label: 'Crypto Doubler',
     category: 'FINANCIAL_FRAUD',
-    desc: 'How fake investment sites show fake profits then demand extra fees to withdraw.',
+    defaultStages: [
+      {
+        t: '1. The Hook',
+        d: "An ad or DM promises: 'Send 0.1 BTC and our AI algorithm will double your money in 24 hours!'",
+        sign: 'Guaranteed profits, zero risk claims, and high pressure.',
+        stop: 'Nobody gives free money. Guaranteed returns in crypto are 100% scams.',
+      },
+      {
+        t: '2. The Fake Dashboard',
+        d: 'You deposit a small amount and the website shows a fake dashboard where your balance rapidly multiplies.',
+        sign: 'Profits look impossibly high and automatic.',
+        stop: 'The dashboard numbers are fake animations. The scammers already pocketed your money.',
+      },
+      {
+        t: '3. The Withdrawal Fee Trap',
+        d: "When you try to cash out, they tell you: 'Pay a 10% tax or gas fee first to unlock your funds.'",
+        sign: 'Demands for more money to withdraw your own money.',
+        stop: 'Stop sending funds. Paying more will never get your initial money back.',
+      },
+      {
+        t: '4. The Ghosting',
+        d: 'Once you refuse to send more money, your account is blocked and the scammer stops replying.',
+        sign: 'Broken website links and deleted Telegram/WhatsApp accounts.',
+        stop: 'Report the scam wallet address and preserve chat screenshots for police dispute.',
+      },
+    ],
   },
   {
     icon: '📷',
     label: 'Webcam Blackmail',
     category: 'COERCION_EXTORTION',
-    desc: 'How scammers use old leaked passwords to trick you into believing they filmed you.',
+    defaultStages: [
+      {
+        t: '1. The Hook',
+        d: "An email says: 'I hacked your webcam while you watched dirty videos. Your old password is hunter2.'",
+        sign: 'Quoting an old leaked password from a previous public data breach.',
+        stop: 'They do not have a video. They bought an old password list on the dark web.',
+      },
+      {
+        t: '2. The Fake Proof',
+        d: "The email claims they installed malware that recorded split-screen footage of your face and screen.",
+        sign: 'Vague descriptions of what you supposedly watched with no actual video attached.',
+        stop: 'Notice they provide zero real screenshot or video proof.',
+      },
+      {
+        t: '3. The Extortion Demand',
+        d: "They demand $900 in Bitcoin within 48 hours or threaten to send the video to your family and coworkers.",
+        sign: 'Countdown timers and aggressive threats to ruin your reputation.',
+        stop: 'Do NOT pay. Paying only proves you are afraid and invites more blackmail demands.',
+      },
+      {
+        t: '4. The Relief',
+        d: 'You change the leaked password on any old accounts, enable two-factor auth, and delete the email.',
+        sign: 'Nothing happens after the deadline passes because they had no video.',
+        stop: 'Block the sender, delete the message, and carry on with your day safely.',
+      },
+    ],
   },
   {
     icon: '🏛️',
-    label: 'Fake IRS / Police Call',
+    label: 'IRS / Police Threat',
     category: 'IMPERSONATION',
-    desc: 'How scammers pose as government agents and demand gift cards or wire transfers.',
-  },
-  {
-    icon: '🚨',
-    label: 'Dangerous Threats',
-    category: 'VIOLENT_THREAT',
-    desc: 'How threats to physical safety work and what real emergency steps to take.',
+    defaultStages: [
+      {
+        t: '1. The Hook',
+        d: "An aggressive caller or text claims: 'This is the IRS. A warrant is out for your arrest for tax evasion.'",
+        sign: 'Hostile tone, threats of immediate police dispatch, and background sirens.',
+        stop: 'Government agencies contact you by official postal mail, never angry texts or phone calls.',
+      },
+      {
+        t: '2. The Isolation',
+        d: "They tell you: 'Do NOT hang up or speak to anyone, or officers will immediately raid your home.'",
+        sign: 'Attempting to keep you on the line so you cannot ask family or friends for advice.',
+        stop: 'Hang up immediately. You will not get arrested for hanging up on a scammer.',
+      },
+      {
+        t: '3. The Untraceable Payment',
+        d: "They instruct you to go to Target or Walmart and buy Apple or Google Play gift cards to pay the fine.",
+        sign: 'Demands for payment via gift cards, wire transfer, or Bitcoin ATM.',
+        stop: 'No government agency accepts gift cards as legal tender. Ever.',
+      },
+      {
+        t: '4. The Loss',
+        d: 'You read the card numbers over the phone, and the scammers drain the cards within seconds.',
+        sign: 'Immediate hung-up call and loss of non-refundable gift card funds.',
+        stop: 'File an official dispute report with the FTC at reportfraud.ftc.gov.',
+      },
+    ],
   },
 ];
 
@@ -56,297 +138,101 @@ interface RiskSimulatorViewProps {
 
 export const RiskSimulatorView: React.FC<RiskSimulatorViewProps> = ({
   initialCategory = 'PHISHING',
-  initialText = '',
-  initialUrl = '',
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<ThreatCategory>(initialCategory);
-  const [customText, setCustomText] = useState(initialText);
-  const [customUrl, setCustomUrl] = useState(initialUrl);
-  const [isLoading, setIsLoading] = useState(false);
-  const [scenarioData, setScenarioData] = useState<SimulationResponse | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [backendData, setBackendData] = useState<SimulationResponse | null>(null);
 
-  const fetchSimulation = async (category: ThreatCategory, text?: string, url?: string) => {
-    setIsLoading(true);
-    setErrorMessage(null);
-    try {
-      const data = await apiService.simulateScenario({
-        category,
-        observed_text: text?.trim() || undefined,
-        domain_or_url: url?.trim() || undefined,
-      });
-      setScenarioData(data);
-    } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to load this scam guide.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const currentScenario =
+    SCENARIOS.find((s) => s.category === selectedCategory) || SCENARIOS[0];
 
   useEffect(() => {
-    fetchSimulation(selectedCategory, customText, customUrl);
-  }, []);
+    let isMounted = true;
+    const loadSim = async () => {
+      setLoading(true);
+      try {
+        const res = await apiService.simulateScenario({ category: selectedCategory });
+        if (isMounted) setBackendData(res);
+      } catch (err) {
+        // Fallback to local default stages if backend is momentarily unreachable
+        if (isMounted) setBackendData(null);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+    loadSim();
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedCategory]);
 
-  const handleSelectPreset = (cat: ThreatCategory) => {
-    setSelectedCategory(cat);
-    fetchSimulation(cat, customText, customUrl);
-  };
-
-  const handleCustomSimulate = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchSimulation(selectedCategory, customText, customUrl);
-  };
-
-  const handleReset = () => {
-    setCustomText('');
-    setCustomUrl('');
-    setSelectedCategory('PHISHING');
-    fetchSimulation('PHISHING');
-  };
+  const stages =
+    backendData?.hypothetical_progression?.map((st) => ({
+      t: `${st.stage_number}. ${st.title}`,
+      d: st.realistic_action,
+      sign: st.warning_signs?.join(', ') || st.attacker_objective,
+      stop: st.prevention_gate,
+    })) || currentScenario.defaultStages;
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Top Header Card */}
-      <div className="glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
-          <div className="flex items-start gap-3">
-            <div className="p-3 rounded-2xl bg-indigo-500/15 text-indigo-400 border border-indigo-500/30 shrink-0">
-              <HelpCircle className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white flex items-center gap-2">
-                How Scammers Trick People (Interactive Guide)
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-300 mt-1">
-                See the exact steps scammers take, the warning signs at each step, and how to stop them before you lose money.
-              </p>
-            </div>
-          </div>
-        </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <section className="py-8">
+        <h1 className="text-4xl font-bold tracking-tight text-foreground">
+          How Scams Work
+        </h1>
+        <p className="mt-2 text-lg text-muted-foreground">
+          See how scams unfold step by step and exactly where to stop them before you lose money.
+        </p>
+      </section>
 
-        {/* Preset Category Switcher */}
-        <div className="space-y-2.5">
-          <span className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
-            Choose a scam type to see how it works:
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            {SCENARIO_PRESETS.map((p) => {
-              const active = selectedCategory === p.category;
-              return (
-                <button
-                  key={p.category}
-                  onClick={() => handleSelectPreset(p.category)}
-                  className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between ${
-                    active
-                      ? 'bg-indigo-950/70 border-indigo-500/80 text-white shadow-lg shadow-indigo-950/50 scale-[1.02]'
-                      : 'bg-slate-950/50 border-slate-800/80 text-slate-400 hover:text-slate-200 hover:border-slate-700'
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xl">{p.icon}</span>
-                      {active && <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />}
-                    </div>
-                    <span className="text-xs font-bold text-white block mb-1">{p.label}</span>
-                  </div>
-                  <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">{p.desc}</p>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Custom Context Form */}
-        <form onSubmit={handleCustomSimulate} className="pt-3 border-t border-white/5 space-y-3">
-          <span className="text-xs text-slate-400 font-semibold flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
-            Want to see how your specific suspicious message or website works? (Optional):
-          </span>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <input
-              type="text"
-              value={customUrl}
-              onChange={(e) => setCustomUrl(e.target.value)}
-              placeholder="e.g. paste suspicious website link here"
-              className="glass-input rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none"
-            />
-            <input
-              type="text"
-              value={customText}
-              onChange={(e) => setCustomText(e.target.value)}
-              placeholder="e.g. paste words from the message here"
-              className="glass-input rounded-xl px-4 py-2.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none"
-            />
-          </div>
-
-          <div className="flex items-center justify-end gap-2.5 pt-1">
+      {/* Preset Buttons */}
+      <div className="flex flex-wrap gap-2">
+        {SCENARIOS.map((s) => {
+          const isActive = selectedCategory === s.category;
+          return (
             <button
-              type="button"
-              onClick={handleReset}
-              className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-medium border border-slate-800 flex items-center gap-1.5 transition-colors"
+              key={s.category}
+              onClick={() => setSelectedCategory(s.category)}
+              className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all flex items-center gap-2 ${
+                isActive
+                  ? 'bg-secondary text-foreground border border-safe shadow-sm font-bold'
+                  : 'btn-ghost'
+              }`}
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              Reset
+              <span>{s.icon}</span>
+              <span>{s.label}</span>
             </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold flex items-center gap-2 transition-all shadow-md shadow-indigo-600/30 disabled:opacity-50"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  Building Guide...
-                </>
-              ) : (
-                <>
-                  <Play className="w-3.5 h-3.5" />
-                  Show Me How This Scam Works
-                </>
-              )}
-            </button>
-          </div>
-        </form>
-
-        {errorMessage && (
-          <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-200 text-xs flex items-center gap-2.5">
-            <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
+          );
+        })}
       </div>
 
-      {/* Loading state */}
-      {isLoading && (
-        <div className="p-16 text-center space-y-3 glass-panel rounded-3xl">
-          <Loader2 className="w-8 h-8 text-indigo-400 animate-spin mx-auto" />
-          <p className="text-sm font-semibold text-slate-300">
-            Mapping out the scam progression and safety steps...
-          </p>
+      {loading && (
+        <div className="glass p-12 text-center text-muted-foreground flex items-center justify-center gap-2">
+          <Loader2 className="w-5 h-5 animate-spin text-safe" />
+          <span>Loading scam breakdown...</span>
         </div>
       )}
 
-      {/* Output Story */}
-      {!isLoading && scenarioData && (
-        <div className="space-y-6">
-          {/* Overview Banner */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-indigo-950/70 via-slate-900 to-[#080C14] border border-indigo-500/30 shadow-xl space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">
-              Scam Breakdown
-            </span>
-            <h2 className="text-2xl font-black tracking-tight text-white">
-              {scenarioData.scenario_name}
-            </h2>
-            <p className="text-sm text-slate-300 pt-1 leading-relaxed">
-              <strong>How they reach you:</strong> {scenarioData.attack_vector}
-            </p>
-          </div>
-
-          {/* Steps */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400">
-              <span>The 4 Steps of this Scam:</span>
-            </div>
-
-            <div className="space-y-4">
-              {scenarioData.hypothetical_progression.map((stage) => (
-                <div
-                  key={stage.stage_number}
-                  className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-6 space-y-4 hover:border-slate-700 transition-colors shadow-sm backdrop-blur"
-                >
-                  <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
-                    <span className="w-7 h-7 rounded-full bg-indigo-600 text-white font-bold text-xs flex items-center justify-center shrink-0">
-                      {stage.stage_number}
-                    </span>
-                    <h3 className="text-base font-bold text-white tracking-tight">
-                      {stage.title}
-                    </h3>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                    <div className="space-y-1">
-                      <span className="text-slate-400 font-bold uppercase text-[11px] block">
-                        What the Scammer is Trying to Do:
-                      </span>
-                      <p className="text-slate-200 leading-relaxed font-sans">{stage.attacker_objective}</p>
-                    </div>
-
-                    <div className="space-y-1">
-                      <span className="text-slate-400 font-bold uppercase text-[11px] block">
-                        What Actually Happens:
-                      </span>
-                      <p className="text-slate-200 leading-relaxed font-sans">{stage.realistic_action}</p>
-                    </div>
-                  </div>
-
-                  {/* Warning signs */}
-                  {stage.warning_signs && stage.warning_signs.length > 0 && (
-                    <div className="pt-2 space-y-1.5">
-                      <span className="text-amber-400 font-bold text-xs flex items-center gap-1.5">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        Warning Signs to Spot at this Step:
-                      </span>
-                      <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-300">
-                        {stage.warning_signs.map((ws, i) => (
-                          <li key={i} className="flex items-start gap-2 bg-slate-950/60 p-2.5 rounded-xl border border-slate-850">
-                            <span className="text-amber-400 font-bold">&bull;</span>
-                            <span>{ws}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {/* Prevention Gate Highlight */}
-                  <div className="p-4 rounded-xl bg-emerald-950/30 border border-emerald-500/40 text-xs text-emerald-200 flex items-start gap-3">
-                    <Shield className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                    <div className="space-y-0.5">
-                      <strong className="text-emerald-300 font-bold text-xs uppercase tracking-wide block">
-                        🛡️ How You Can Stop the Scam Right Here:
-                      </strong>
-                      <span className="text-emerald-100/90 leading-relaxed">
-                        {stage.prevention_gate}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Potential Consequences & Checklist */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-6 space-y-3 backdrop-blur">
-              <div className="flex items-center gap-2 text-xs font-bold text-red-400 uppercase tracking-wider">
-                <ShieldAlert className="w-4 h-4" />
-                <span>What Happens if You Fall for It:</span>
+      {/* 4 Cards in 2x2 Grid matching Lovable */}
+      {!loading && (
+        <div className="grid gap-4 md:grid-cols-2">
+          {stages.map((s) => (
+            <div key={s.t} className="glass space-y-3.5 p-6 flex flex-col justify-between">
+              <div className="space-y-2.5">
+                <h2 className="text-2xl font-bold text-foreground">{s.t}</h2>
+                <p className="text-muted-foreground leading-relaxed text-base">{s.d}</p>
+                <p className="text-sm">
+                  ⚠️ <b className="text-foreground">Warning sign:</b>{' '}
+                  <span className="text-caution">{s.sign}</span>
+                </p>
               </div>
-              <ul className="space-y-2 text-xs text-slate-300">
-                {scenarioData.potential_consequences.map((c, i) => (
-                  <li key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-950/60 border border-slate-850">
-                    <ArrowRight className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
-                    <span>{c}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
 
-            <div className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-6 space-y-3 backdrop-blur">
-              <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 uppercase tracking-wider">
-                <CheckCircle2 className="w-4 h-4" />
-                <span>Summary: Rules to Stay Safe:</span>
+              <div className="rounded-2xl bg-primary p-4 font-semibold text-primary-foreground text-sm shadow-md shadow-primary/20">
+                🛡️ <b>How to Stop It Right Here:</b> {s.stop}
               </div>
-              <ul className="space-y-2 text-xs text-slate-300">
-                {scenarioData.recommended_prevention_gates.map((g, i) => (
-                  <li key={i} className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-950/60 border border-slate-850">
-                    <Shield className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                    <span>{g}</span>
-                  </li>
-                ))}
-              </ul>
             </div>
-          </div>
+          ))}
         </div>
       )}
     </div>

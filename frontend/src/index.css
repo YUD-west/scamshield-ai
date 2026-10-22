@@ -2,60 +2,95 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    color-scheme: dark;
-  }
+:root {
+  --radius: 0.875rem;
+  /* Emerald green "Safe" theme from Lovable */
+  --background: #0d2818;
+  --foreground: #f0fdf4;
+  --card: rgba(16, 44, 27, 0.65);
+  --popover: #113520;
+  --primary: #22c55e;
+  --primary-foreground: #052e16;
+  --secondary: #19432a;
+  --secondary-foreground: #f0fdf4;
+  --muted: #1e4a30;
+  --muted-foreground: #86efac;
+  --safe: #22c55e;
+  --caution: #eab308;
+  --danger: #ef4444;
+  --border: rgba(134, 239, 172, 0.18);
+  --input: rgba(134, 239, 172, 0.22);
+  --gradient-bg: radial-gradient(ellipse at top, #14532d 0%, #0d2818 55%, #051a0e 100%);
+  --shadow-glow: 0 10px 40px -10px rgba(34, 197, 94, 0.55);
+}
 
+@layer base {
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: #080C14;
-    color: #F1F5F9;
+    background: var(--gradient-bg);
+    background-attachment: fixed;
+    color: var(--foreground);
+    font-family: -apple-system, BlinkMacSystemFont, "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+    min-height: 100vh;
     letter-spacing: -0.01em;
   }
 }
 
-/* Figma-Grade Glass & Soft Glow Utilities */
-.glass-panel {
-  background: rgba(15, 23, 42, 0.65);
+.glass {
+  background: var(--card);
+  border: 1px solid var(--border);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: calc(var(--radius) + 8px);
 }
 
-.glass-panel-glow {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(20px);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  box-shadow: 0 10px 40px -10px rgba(59, 130, 246, 0.15);
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  border-radius: calc(var(--radius) + 4px);
+  font-weight: 700;
+  padding: 0.85rem 1.5rem;
+  box-shadow: var(--shadow-glow);
+  transition: transform 0.15s, filter 0.15s;
 }
 
-.glass-input {
-  background: rgba(8, 12, 20, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
 }
 
-.glass-input:focus {
-  border-color: #3B82F6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
-/* Custom modern scrollbars */
+.btn-ghost {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 4px);
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.btn-ghost:hover {
+  background: rgba(34, 197, 94, 0.2);
+  color: #fff;
+}
+
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(134, 239, 172, 0.25);
   border-radius: 999px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(134, 239, 172, 0.45);
 }

@@ -1,5 +1,4 @@
 import React from 'react';
-import { ShieldCheck, Shield, BookOpen, FileCheck, CheckCircle2 } from 'lucide-react';
 import { HealthResponse } from '../../types';
 
 interface HeaderProps {
@@ -17,97 +16,60 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const isHealthy = health?.status === 'operational';
 
+  const navLinks = [
+    { id: 'triage' as const, label: 'Check for Scams' },
+    { id: 'simulator' as const, label: 'How Scams Work' },
+    { id: 'incident' as const, label: 'Saved Reports' },
+  ];
+
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 bg-[#080C14]/80 backdrop-blur-xl">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between gap-4">
-        {/* Brand identity */}
-        <div
-          onClick={() => onTabChange('triage')}
-          className="flex items-center gap-3 cursor-pointer group select-none"
-        >
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-blue-500/25 border border-white/10 group-hover:scale-105 transition-transform duration-200">
-            <Shield className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-xl tracking-tight text-white">
-                Scam<span className="text-blue-400">Shield</span>
-              </span>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                AI Assistant
-              </span>
-            </div>
-            <p className="text-xs text-slate-400 hidden sm:block">
-              Check messages, emails, and links before you click
-            </p>
-          </div>
-        </div>
+    <header className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-5">
+      {/* Brand */}
+      <button
+        onClick={() => onTabChange('triage')}
+        className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground hover:opacity-90 transition-opacity"
+      >
+        <span className="text-2xl">🛡️</span>
+        <span>
+          ScamShield <span className="text-primary">AI</span>
+        </span>
+      </button>
 
-        {/* Friendly Navigation Pills */}
-        <nav className="flex items-center p-1.5 rounded-2xl bg-slate-900/80 border border-white/10 shadow-inner">
-          <button
-            onClick={() => onTabChange('triage')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${
-              activeTab === 'triage'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <ShieldCheck className="w-4 h-4" />
-            <span>Check for Scams</span>
-          </button>
-
-          <button
-            onClick={() => onTabChange('simulator')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${
-              activeTab === 'simulator'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <BookOpen className="w-4 h-4" />
-            <span className="hidden sm:inline">How Scams Work</span>
-            <span className="sm:hidden">Scams</span>
-          </button>
-
-          <button
-            onClick={() => onTabChange('incident')}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${
-              activeTab === 'incident'
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30'
-                : 'text-slate-400 hover:text-white hover:bg-white/5'
-            }`}
-          >
-            <FileCheck className="w-4 h-4" />
-            <span className="hidden sm:inline">Saved Reports</span>
-            <span className="sm:hidden">Reports</span>
-          </button>
+      {/* Nav Links */}
+      <div className="flex items-center gap-3">
+        <nav className="flex gap-1 text-sm bg-card/60 p-1 rounded-2xl border border-border backdrop-blur">
+          {navLinks.map((link) => {
+            const isActive = activeTab === link.id;
+            return (
+              <button
+                key={link.id}
+                onClick={() => onTabChange(link.id)}
+                className={`rounded-xl px-3.5 py-2 transition-all font-medium ${
+                  isActive
+                    ? 'bg-secondary text-foreground font-bold shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {link.label}
+              </button>
+            );
+          })}
         </nav>
 
         {/* Protection Active Indicator */}
-        <div className="hidden lg:flex items-center gap-2 text-xs">
-          <div
-            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full border ${
+        <div className="hidden sm:inline-flex items-center gap-2 rounded-full bg-secondary/80 border border-border px-3.5 py-1.5 text-xs text-muted-foreground">
+          <span
+            className={`h-2 w-2 rounded-full ${
               healthLoading
-                ? 'bg-slate-500/10 border-slate-500/30 text-slate-400'
+                ? 'bg-amber-400 animate-pulse'
                 : isHealthy
-                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                : 'bg-red-500/10 border-red-500/30 text-red-300'
+                ? 'bg-safe animate-pulse'
+                : 'bg-danger'
             }`}
-          >
-            <span className="relative flex h-2 w-2">
-              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
-                healthLoading ? 'bg-slate-400' : isHealthy ? 'bg-emerald-400' : 'bg-red-400'
-              }`} />
-              <span className={`relative inline-flex rounded-full h-2 w-2 ${
-                healthLoading ? 'bg-slate-500' : isHealthy ? 'bg-emerald-500' : 'bg-red-500'
-              }`} />
-            </span>
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="font-medium">
-              {healthLoading ? 'Connecting AI...' : isHealthy ? 'AI Defense Active' : 'Offline'}
-            </span>
-          </div>
+          />
+          <span className="font-semibold text-foreground">
+            {healthLoading ? 'Connecting...' : isHealthy ? 'Active' : 'Offline'}
+          </span>
         </div>
       </div>
     </header>

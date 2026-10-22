@@ -1,5 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Loader2, CheckCircle2, Copy } from 'lucide-react';
+import {
+  Loader2,
+  CheckCircle2,
+  Copy,
+  Plus,
+  Trash2,
+  FileText,
+  Printer,
+  MapPin,
+  Lock,
+  Search,
+  Hash,
+} from 'lucide-react';
 import { apiService } from '../../services/api';
 import { IncidentRecord } from '../../types';
 
@@ -40,6 +52,7 @@ const emptyForm = {
 
 export const IncidentVaultView: React.FC = () => {
   const [list, setList] = useState<SavedReport[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [view, setView] = useState<SavedReport | null>(null);
   const [form, setForm] = useState(emptyForm);
@@ -48,17 +61,14 @@ export const IncidentVaultView: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // Sync from backend and localStorage on mount
   useEffect(() => {
     let isMounted = true;
     const loadReports = async () => {
-      // 1. Load cached local reports
       const local: SavedReport[] = JSON.parse(
         localStorage.getItem(STORAGE_KEY) || '[]'
       );
 
       try {
-        // 2. Fetch backend recorded incidents
         const backendList: IncidentRecord[] = await apiService.listIncidents();
         const merged: SavedReport[] = [...local];
 
@@ -130,7 +140,6 @@ export const IncidentVaultView: React.FC = () => {
       seal: sealCode,
     };
 
-    // Also persist into backend if possible
     try {
       await apiService.recordIncident({
         title: form.title.trim() || 'Untitled Scam Report',
@@ -142,7 +151,7 @@ export const IncidentVaultView: React.FC = () => {
         financial_loss_amount: form.lost ? parseFloat(form.lost.replace(/[^0-9.]/g, '')) : undefined,
       });
     } catch (e) {
-      // Offline fallback: saved locally
+      // Handled locally
     }
 
     persist([newReport, ...list]);
@@ -155,78 +164,162 @@ export const IncidentVaultView: React.FC = () => {
 
   const handleOpenExportView = async (report: SavedReport) => {
     setView(report);
-    // Optionally fetch full markdown export from backend
     try {
       const exp = await apiService.exportIncidentReport(report.id);
       setView((prev) => (prev ? { ...prev, rawExport: exp.markdown_report } : prev));
     } catch (e) {
-      // Standard local report presentation
+      // Keep report
     }
   };
 
+  const filteredList = list.filter(
+    (r) =>
+      r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.sender.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.seal.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalLoss = list.reduce((acc, r) => {
+    const num = parseFloat(r.lost.replace(/[^0-9.]/g, '')) || 0;
+    return acc + num;
+  }, 0);
+
   const fieldCls =
-    'w-full rounded-xl border border-input bg-background/50 p-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary placeholder-muted-foreground/60 transition-all';
+    'w-full rounded-2xl border border-input bg-black/40 p-3.5 text-sm sm:text-base text-foreground outline-none focus:ring-2 focus:ring-safe placeholder-muted-foreground/50 transition-all';
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 py-8">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight text-foreground">
-            Saved Reports & Evidence
-          </h1>
-          <p className="mt-1 text-base text-muted-foreground">
-            Save scam evidence and export a clean, tamper-evident report for your bank or police.
-          </p>
+    <div className="space-y-8 animate-fade-in">
+      {/* Top Header Card */}
+      <section className="text-center pt-2 pb-6 max-w-3xl mx-auto space-y-4">
+        <div className="inline-flex items-center gap-2 rounded-full bg-secondary/80 border border-border px-4 py-1.5 text-xs font-semibold shadow-sm">
+          <Lock className="w-3.5 h-3.5 text-safe" />
+          <span className="text-foreground">Cryptographic Evidence Vault</span>
         </div>
-        <button className="btn-primary text-base" onClick={() => setOpen(true)}>
-          + Save New Scam Report
-        </button>
+
+        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white font-display">
+          Saved Reports &{' '}
+          <span className="bg-gradient-to-r from-emerald-400 via-green-300 to-teal-300 bg-clip-text text-transparent">
+            Evidence
+          </span>
+        </h1>
+
+        <p className="text-base sm:text-lg text-muted-foreground/90 max-w-2xl mx-auto leading-relaxed">
+          Lock in untampered proof of scams, fraudulent charges, or threats. Export official reports with cryptographic SHA-256 seals ready for your bank or police department.
+        </p>
+      </section>
+
+      {/* Control Bar: Search + Stats + New Button */}
+      <div className="glass p-4 sm:p-5 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 shadow-xl border border-border/80">
+        <div className="relative flex-1 max-w-md">
+          <Search className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search saved reports by title, sender, or seal..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-input bg-black/40 text-sm text-foreground placeholder-muted-foreground/50 outline-none focus:ring-2 focus:ring-safe"
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 justify-end">
+          <div className="hidden sm:flex items-center gap-4 text-xs text-muted-foreground pr-2">
+            <span>
+              <b className="text-white text-sm">{list.length}</b> Reports
+            </span>
+            <span>&bull;</span>
+            <span>
+              Total Loss: <b className="text-danger text-sm">${totalLoss.toFixed(2)}</b>
+            </span>
+          </div>
+
+          <button
+            className="btn-primary text-sm py-2.5 px-5 flex items-center gap-2 shadow-md shadow-safe/25 shrink-0"
+            onClick={() => setOpen(true)}
+          >
+            <Plus className="w-4 h-4" />
+            <span>Save New Scam Report</span>
+          </button>
+        </div>
       </div>
 
       {/* Empty State */}
-      {list.length === 0 && (
-        <div className="glass p-12 text-center text-muted-foreground text-base">
-          No reports yet. Your saved evidence will appear here.
+      {filteredList.length === 0 && (
+        <div className="glass p-16 text-center text-muted-foreground space-y-3">
+          <div className="w-16 h-16 rounded-3xl bg-secondary/50 border border-border flex items-center justify-center text-3xl mx-auto">
+            📁
+          </div>
+          <h3 className="text-lg font-bold text-white font-display">
+            {list.length === 0 ? 'No Reports Saved Yet' : 'No Matching Reports Found'}
+          </h3>
+          <p className="text-sm max-w-md mx-auto leading-relaxed">
+            {list.length === 0
+              ? 'Whenever you encounter a suspicious message, phone call, or website, click "Save New Scam Report" above to preserve proof.'
+              : 'Try searching with a different keyword or clear your search query.'}
+          </p>
         </div>
       )}
 
-      {/* Reports List */}
-      <div className="space-y-3">
-        {list.map((r) => (
+      {/* Flexible Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {filteredList.map((r) => (
           <div
             key={r.id}
-            className="glass flex flex-wrap items-center justify-between gap-3 p-5 transition-transform hover:-translate-y-0.5"
+            className="glass p-6 space-y-4 card-interactive flex flex-col justify-between border border-border/80 shadow-lg relative overflow-hidden"
           >
-            <div>
-              <div className="text-lg font-bold text-foreground">
-                {r.title || 'Untitled Report'}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between border-b border-border/60 pb-3">
+                <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-secondary text-safe border border-border font-bold flex items-center gap-1">
+                  <Hash className="w-3 h-3" />
+                  SEAL {r.seal}
+                </span>
+                <span className="text-xs text-muted-foreground">{r.date.split(',')[0]}</span>
               </div>
-              <div className="text-sm text-muted-foreground flex items-center gap-2 mt-0.5">
-                <span>{r.date}</span>
-                <span>·</span>
-                <span className="font-mono text-safe">🔏 Seal {r.seal}</span>
+
+              <h2 className="text-xl font-bold text-white font-display line-clamp-1">
+                {r.title || 'Untitled Scam Report'}
+              </h2>
+
+              <p className="text-xs sm:text-sm text-foreground/80 line-clamp-2 leading-relaxed">
+                {r.description || r.proof || 'No description provided.'}
+              </p>
+
+              {/* Badges row */}
+              <div className="flex flex-wrap items-center gap-2 text-xs pt-1">
+                {r.sender && (
+                  <span className="px-2.5 py-1 rounded-lg bg-black/40 text-muted-foreground border border-border">
+                    From: <b className="text-white">{r.sender}</b>
+                  </span>
+                )}
                 {r.lost && (
-                  <>
-                    <span>·</span>
-                    <span className="text-danger font-semibold">{r.lost}</span>
-                  </>
+                  <span className="px-2.5 py-1 rounded-lg bg-danger/15 text-danger font-bold border border-danger/30">
+                    Loss: {r.lost}
+                  </span>
+                )}
+                {r.location && (
+                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/15 text-safe border border-emerald-500/30 flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    GPS Attached
+                  </span>
                 )}
               </div>
             </div>
 
-            <div className="flex gap-2">
+            {/* Actions footer */}
+            <div className="flex items-center justify-between gap-2 pt-3 border-t border-border/60">
               <button
-                className="btn-ghost text-sm"
+                className="btn-ghost text-xs py-2 px-3 flex items-center gap-1.5 flex-1 justify-center"
                 onClick={() => handleOpenExportView(r)}
               >
-                View & Export Official Report
+                <FileText className="w-3.5 h-3.5 text-safe" />
+                <span>View & Export</span>
               </button>
               <button
-                className="btn-ghost text-sm text-muted-foreground hover:text-danger"
+                className="btn-ghost text-xs py-2 px-3 text-muted-foreground hover:text-danger hover:border-danger/40"
                 onClick={() => persist(list.filter((x) => x.id !== r.id))}
+                title="Delete Report"
               >
-                Delete
+                <Trash2 className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -236,63 +329,105 @@ export const IncidentVaultView: React.FC = () => {
       {/* New Report Modal */}
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in"
           onClick={() => setOpen(false)}
         >
           <div
-            className="glass max-h-[90vh] w-full max-w-lg space-y-3.5 overflow-auto bg-popover p-6 shadow-2xl border border-border"
+            className="glass max-h-[92vh] w-full max-w-xl space-y-4 overflow-auto bg-[#0a2416] p-6 sm:p-8 shadow-2xl border border-border rounded-3xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-2xl font-bold text-foreground">New Scam Report</h2>
-            <p className="text-xs text-muted-foreground">
-              Lock timestamped proof of a scam message to share with authorities or your bank.
-            </p>
+            <div className="border-b border-border/70 pb-3">
+              <h2 className="text-2xl font-bold text-white font-display">
+                Save New Scam Report
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Lock tamper-evident proof to use in bank disputes or law enforcement reports.
+              </p>
+            </div>
 
-            <input
-              className={fieldCls}
-              placeholder="Title (e.g. Fake bank text message)"
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-            />
-            <textarea
-              className={fieldCls}
-              rows={3}
-              placeholder="What happened? (Describe briefly)"
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-            />
-            <textarea
-              className={fieldCls}
-              rows={3}
-              placeholder="Paste the scam message, email or link (Proof)"
-              value={form.proof}
-              onChange={(e) => setForm({ ...form, proof: e.target.value })}
-            />
-            <input
-              className={fieldCls}
-              placeholder="Sender phone or email (e.g. +1-800-555-0199)"
-              value={form.sender}
-              onChange={(e) => setForm({ ...form, sender: e.target.value })}
-            />
-            <input
-              className={fieldCls}
-              placeholder="Money lost, if any (e.g. $250)"
-              value={form.lost}
-              onChange={(e) => setForm({ ...form, lost: e.target.value })}
-            />
+            <div className="space-y-3.5">
+              <div>
+                <label className="text-xs font-bold text-muted-foreground block mb-1">
+                  Report Title *
+                </label>
+                <input
+                  className={fieldCls}
+                  placeholder="e.g. Fake Bank of America alert asking for login"
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                />
+              </div>
 
-            <label className="flex items-center gap-3 text-sm cursor-pointer select-none text-foreground pt-1">
-              <input
-                type="checkbox"
-                className="h-5 w-5 rounded accent-primary cursor-pointer"
-                checked={useLoc}
-                onChange={(e) => toggleLocation(e.target.checked)}
-              />
-              <span>Attach Location for Police Context</span>
-              {loc && <span className="text-xs text-safe font-mono">({loc})</span>}
-            </label>
+              <div>
+                <label className="text-xs font-bold text-muted-foreground block mb-1">
+                  What Happened? (Brief description)
+                </label>
+                <textarea
+                  className={fieldCls}
+                  rows={2}
+                  placeholder="Describe how they contacted you, what they demanded, and if you replied..."
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                />
+              </div>
 
-            <div className="flex justify-end gap-2 pt-3 border-t border-border">
+              <div>
+                <label className="text-xs font-bold text-muted-foreground block mb-1">
+                  Paste the Scam Message or Link (Proof) *
+                </label>
+                <textarea
+                  className={fieldCls}
+                  rows={3}
+                  placeholder="Paste the raw text message, email headers, or URL here. A cryptographic SHA-256 seal will lock this content."
+                  value={form.proof}
+                  onChange={(e) => setForm({ ...form, proof: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground block mb-1">
+                    Sender Phone or Email
+                  </label>
+                  <input
+                    className={fieldCls}
+                    placeholder="e.g. +1-800-555-0199"
+                    value={form.sender}
+                    onChange={(e) => setForm({ ...form, sender: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-muted-foreground block mb-1">
+                    Money Lost, if any ($ USD)
+                  </label>
+                  <input
+                    className={fieldCls}
+                    placeholder="e.g. $250.00"
+                    value={form.lost}
+                    onChange={(e) => setForm({ ...form, lost: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              {/* Location Toggle */}
+              <label className="flex items-center gap-3 p-3 rounded-xl bg-black/40 border border-border cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  className="h-5 w-5 rounded accent-safe cursor-pointer"
+                  checked={useLoc}
+                  onChange={(e) => toggleLocation(e.target.checked)}
+                />
+                <div className="text-xs text-foreground leading-relaxed">
+                  <span className="font-bold block">Attach My Location for Police Context</span>
+                  <span className="text-muted-foreground">
+                    Only attach if filing with local authorities. {loc && <b className="text-safe">({loc})</b>}
+                  </span>
+                </div>
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-3 border-t border-border/70">
               <button
                 type="button"
                 className="btn-ghost text-sm"
@@ -302,17 +437,17 @@ export const IncidentVaultView: React.FC = () => {
               </button>
               <button
                 type="button"
-                className="btn-primary text-sm flex items-center gap-1.5"
+                className="btn-primary text-sm flex items-center gap-2"
                 disabled={loading || (!form.title.trim() && !form.proof.trim())}
                 onClick={handleSave}
               >
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Saving...</span>
+                    <span>Sealing Evidence...</span>
                   </>
                 ) : (
-                  <span>Save Report</span>
+                  <span>Save & Seal Evidence</span>
                 )}
               </button>
             </div>
@@ -320,41 +455,46 @@ export const IncidentVaultView: React.FC = () => {
         </div>
       )}
 
-      {/* Official Report View Modal */}
+      {/* Official Export Modal */}
       {view && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in"
           onClick={() => setView(null)}
         >
           <div
-            className="glass max-h-[90vh] w-full max-w-2xl space-y-4 overflow-auto bg-popover p-6 sm:p-8 shadow-2xl border border-border"
+            className="glass max-h-[92vh] w-full max-w-2xl space-y-5 overflow-auto bg-[#0a2416] p-6 sm:p-8 shadow-2xl border border-border rounded-3xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-border pb-3">
-              <h2 className="text-2xl font-bold text-foreground">
-                Official Scam Incident Report
-              </h2>
-              <span className="font-mono text-xs px-2.5 py-1 rounded-full bg-secondary text-safe border border-border">
+            <div className="flex items-center justify-between border-b border-border/70 pb-4">
+              <div>
+                <h2 className="text-2xl font-bold text-white font-display">
+                  Official Scam Dispute Report
+                </h2>
+                <span className="text-xs text-muted-foreground">
+                  Standard format for bank fraud disputes & police reports
+                </span>
+              </div>
+              <span className="font-mono text-xs px-3 py-1 rounded-full bg-secondary text-safe border border-border font-bold">
                 🔏 SEAL {view.seal}
               </span>
             </div>
 
-            <div className="space-y-2 text-sm">
+            <div className="space-y-2.5 text-sm">
               {[
-                ['Title', view.title],
-                ['Date Recorded', view.date],
-                ['What Happened', view.description],
-                ['Message Proof', view.proof],
-                ['Sender Information', view.sender],
-                ['Money Lost', view.lost],
-                ['Location Attached', view.location || 'Not attached'],
-                ['Digital Seal (SHA-256 Digest)', view.seal],
+                ['Incident Title', view.title],
+                ['Timestamp', view.date],
+                ['Incident Summary', view.description],
+                ['Evidence Payload', view.proof],
+                ['Sender Coordinates', view.sender],
+                ['Financial Loss', view.lost || 'No financial loss reported'],
+                ['GPS Coordinates', view.location || 'Not attached'],
+                ['Cryptographic Seal', view.seal],
               ].map(([k, v]) => (
-                <div key={k} className="border-b border-border/50 py-2.5">
+                <div key={k} className="p-3 rounded-xl bg-black/30 border border-border/50">
                   <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     {k}
                   </div>
-                  <div className="whitespace-pre-wrap text-foreground font-medium mt-0.5">
+                  <div className="whitespace-pre-wrap text-foreground font-medium mt-1">
                     {v || '—'}
                   </div>
                 </div>
@@ -362,21 +502,21 @@ export const IncidentVaultView: React.FC = () => {
             </div>
 
             {view.rawExport && (
-              <details className="p-3 rounded-xl bg-background/50 border border-border text-xs">
+              <details className="p-3.5 rounded-xl bg-black/40 border border-border text-xs">
                 <summary className="cursor-pointer font-bold text-muted-foreground">
-                  View Full Police/Bank Dispute Docket Text
+                  View Full Formatted Legal Dispute Text
                 </summary>
-                <pre className="mt-2 font-mono whitespace-pre-wrap text-foreground leading-relaxed overflow-x-auto">
+                <pre className="mt-2.5 font-mono whitespace-pre-wrap text-foreground leading-relaxed overflow-x-auto">
                   {view.rawExport}
                 </pre>
               </details>
             )}
 
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-border">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/70">
               <button
-                className="btn-ghost text-sm flex items-center gap-1.5"
+                className="btn-ghost text-xs sm:text-sm flex items-center gap-1.5"
                 onClick={() => {
-                  const reportSummary = `OFFICIAL SCAM REPORT\nTitle: ${view.title}\nDate: ${view.date}\nProof: ${view.proof}\nSender: ${view.sender}\nSeal: ${view.seal}`;
+                  const reportSummary = `OFFICIAL SCAM REPORT\nTitle: ${view.title}\nDate: ${view.date}\nProof: ${view.proof}\nSender: ${view.sender}\nLoss: ${view.lost}\nSeal: ${view.seal}`;
                   navigator.clipboard.writeText(view.rawExport || reportSummary);
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
@@ -387,14 +527,15 @@ export const IncidentVaultView: React.FC = () => {
               </button>
 
               <div className="flex gap-2">
-                <button className="btn-ghost text-sm" onClick={() => setView(null)}>
+                <button className="btn-ghost text-xs sm:text-sm" onClick={() => setView(null)}>
                   Close
                 </button>
                 <button
-                  className="btn-primary text-sm flex items-center gap-1.5"
+                  className="btn-primary text-xs sm:text-sm flex items-center gap-1.5"
                   onClick={() => window.print()}
                 >
-                  <span>🖨️ Print / Save PDF</span>
+                  <Printer className="w-4 h-4" />
+                  <span>Print / Save PDF</span>
                 </button>
               </div>
             </div>

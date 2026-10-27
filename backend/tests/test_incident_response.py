@@ -139,6 +139,20 @@ def test_api_incident_endpoints_flow(client: TestClient):
     assert export_data["incident_id"] == incident_id
     assert "SS-INC-" in export_data["docket_number"]
 
+    # 4. Delete single incident
+    delete_res = client.delete(f"/api/v1/incident/{incident_id}")
+    assert delete_res.status_code == 200
+    assert delete_res.json()["success"] is True
+
+    # 5. Verify deleted from vault
+    get_res = client.get(f"/api/v1/incident/{incident_id}")
+    assert get_res.status_code == 404
+
+    # 6. Clear vault
+    clear_res = client.delete("/api/v1/incident/vault/clear")
+    assert clear_res.status_code == 200
+    assert clear_res.json()["success"] is True
+
 
 def test_api_multimedia_inspect_endpoint(client: TestClient):
     sample_text = "Urgent: Verify your account at https://phish-test.xyz"

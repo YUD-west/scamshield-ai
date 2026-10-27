@@ -49,6 +49,42 @@ HIGH_RISK_TLDS: Set[str] = {
     "monster", "work", "fit", "gq", "ml", "tk", "ga", "cf", "cam"
 }
 
+LEETSPEAK_MAP: Dict[str, str] = {
+    "1": "l",
+    "0": "o",
+    "5": "s",
+    "3": "e",
+    "4": "a",
+    "8": "b",
+    "@": "a",
+}
+
+
+def normalize_leetspeak(text: str) -> str:
+    """Translate common leetspeak substitutions to standard Latin characters."""
+    normalized = text.lower().replace("vv", "w").replace("rn", "m")
+    for char, replacement in LEETSPEAK_MAP.items():
+        normalized = normalized.replace(char, replacement)
+    return normalized
+
+
+def levenshtein_distance(s1: str, s2: str) -> int:
+    """Compute Levenshtein distance between two strings."""
+    if len(s1) < len(s2):
+        return levenshtein_distance(s2, s1)
+    if len(s2) == 0:
+        return len(s1)
+    previous_row = list(range(len(s2) + 1))
+    for i, c1 in enumerate(s1):
+        current_row = [i + 1]
+        for j, c2 in enumerate(s2):
+            insertions = previous_row[j + 1] + 1
+            deletions = current_row[j] + 1
+            substitutions = previous_row[j] + (c1 != c2)
+            current_row.append(min(insertions, deletions, substitutions))
+        previous_row = current_row
+    return previous_row[-1]
+
 
 def calculate_shannon_entropy(text: str) -> float:
     """Calculate Shannon entropy of a string to detect randomness or obfuscation."""
@@ -119,20 +155,43 @@ def check_target_impersonation(domain: str) -> Optional[Tuple[str, str]]:
         root_name = clean_domain
 
     for target in HIGH_VALUE_TARGETS:
-        # Check if target is in the root domain name with hyphens or prefixes
-        # e.g., 'paypal-update' or 'verify-apple' while root_name != 'paypal'
+        # 1. Check if target is in the root domain name with hyphens or prefixes
+        # e.g., 'paypal-update' or 'verify-apple' while root_name != target
         if target in root_name and root_name != target:
             return (
                 target,
                 f"Domain '{clean_domain}' embeds trusted brand '{target}' within '{root_name}'"
             )
 
-        # Check if trusted brand is embedded as a misleading subdomain:
+        # 2. Check leetspeak substitutions in root domain name (e.g. 'paypa1' or 'amaz0n')
+        normalized_root = normalize_leetspeak(root_name)
+        if normalized_root != root_name:
+            if normalized_root == target:
+                return (
+                    target,
+                    f"Domain root '{root_name}' uses leetspeak substitution to mimic brand '{target}'"
+                )
+            if target in normalized_root and root_name != target:
+                return (
+                    target,
+                    f"Domain root '{root_name}' embeds brand '{target}' via leetspeak characters"
+                )
+
+        # 3. Check for close typosquatting / distance-1 typos (e.g. 'paypall', 'gooogle', 'amazn')
+        if len(root_name) >= 4 and len(target) >= 4 and abs(len(root_name) - len(target)) <= 1:
+            if root_name != target and levenshtein_distance(root_name, target) == 1:
+                return (
+                    target,
+                    f"Domain root '{root_name}' is a close typosquatting variant of brand '{target}'"
+                )
+
+        # 4. Check if trusted brand is embedded as a misleading subdomain:
         # e.g., 'paypal.com.scam-domain.com'
         if len(parts) > 2:
             subdomains = parts[:-2]
             for sub in subdomains:
-                if sub == target or f"{target}-" in sub or f"-{target}" in sub:
+                sub_norm = normalize_leetspeak(sub)
+                if sub == target or sub_norm == target or f"{target}-" in sub or f"-{target}" in sub:
                     return (
                         target,
                         f"Subdomain '{sub}' impersonates trusted brand '{target}' on external host '{parts[-2]}.{parts[-1]}'"

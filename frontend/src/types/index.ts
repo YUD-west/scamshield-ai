@@ -186,3 +186,65 @@ export interface MultimediaInspectResult {
   is_suspicious_extension: boolean;
   disclaimer: string;
 }
+
+// --- Editorial UI / ScamShield AI Types ---
+
+export interface SignalItem {
+  kind: 'urgency' | 'money' | 'lookalike';
+  label: string;
+  hint: string;
+  count: number;
+  strength: number;
+}
+
+export interface ScanResultView {
+  isThreat: boolean;
+  verdict: 'danger' | 'caution' | 'safe';
+  categoryTitle: string;
+  certainty: number;
+  summary: string;
+  recommendations: string[];
+  flags: Array<{ phrase: string; why: string }>;
+  extractedUrls: string[];
+  signals: SignalItem[];
+}
+
+export interface SavedReport {
+  id: string;
+  createdAt: string;
+  message: string;
+  verdict: 'danger' | 'caution' | 'safe';
+  categoryTitle: string;
+  certainty: number;
+  summary: string;
+  flagCount: number;
+  hash: string;
+}
+
+// --- Authentication & Account Types ---
+
+export interface User {
+  id: string;
+  username: string;
+  email?: string | null;
+  role: string;
+  created_at: string;
+}
+
+export interface AuthTokenResponse {
+  token: string;
+  expires_at: string;
+  user: User;
+}
+
+export interface RegisterRequest {
+  username: string;
+  password: string;
+  email?: string;
+}
+
+export interface LoginRequest {
+  username_or_email: string;
+  password: string;
+}
+

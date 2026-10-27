@@ -180,17 +180,51 @@ class TextThreatAnalyzer:
                 if severity_rank[rule_sev] > severity_rank[highest_severity]:
                     highest_severity = rule_sev
 
-        # If URLs are present inside text, flag malicious link indicator
+        # If URLs are present inside text, perform passive inspection on each URL
         if extracted_urls:
-            evidence_list.append(
-                EvidenceItem(
-                    indicator_type=IndicatorType.LOOKALIKE_DOMAIN,
-                    title="Embedded Web Link Detected",
-                    description=f"Message contains {len(extracted_urls)} external link(s). Always inspect URLs passively before interacting.",
-                    matched_pattern=f"{len(extracted_urls)} link(s) found",
-                    severity_contribution=RiskSeverity.MEDIUM if category_weights else RiskSeverity.LOW
-                )
-            )
+            from app.models.schemas import UrlAnalysisRequest
+            from app.services.url_analyzer import url_analyzer
+
+            for url_str in extracted_urls:
+                try:
+                    url_analysis = url_analyzer.analyze(UrlAnalysisRequest(url=url_str))
+                    if url_analysis.is_threat:
+                        category_weights[ThreatCategory.MALICIOUS_LINK] = max(
+                            category_weights.get(ThreatCategory.MALICIOUS_LINK, 0.0), 0.88
+                        )
+                        if severity_rank[url_analysis.severity] > severity_rank[highest_severity]:
+                            highest_severity = url_analysis.severity
+
+                        for u_ev in url_analysis.evidence:
+                            evidence_list.append(
+                                EvidenceItem(
+                                    indicator_type=u_ev.indicator_type,
+                                    title=f"Embedded Link Threat: {u_ev.title}",
+                                    description=f"In URL '{url_str}': {u_ev.description}",
+                                    matched_pattern=u_ev.matched_pattern,
+                                    severity_contribution=u_ev.severity_contribution
+                                )
+                            )
+                    else:
+                        evidence_list.append(
+                            EvidenceItem(
+                                indicator_type=IndicatorType.LOOKALIKE_DOMAIN,
+                                title="Embedded Web Link Verified",
+                                description=f"Message contains link '{url_str}'. Passive inspection found no immediate known threats.",
+                                matched_pattern=url_str,
+                                severity_contribution=RiskSeverity.LOW
+                            )
+                        )
+                except Exception:
+                    evidence_list.append(
+                        EvidenceItem(
+                            indicator_type=IndicatorType.LOOKALIKE_DOMAIN,
+                            title="Embedded Web Link Detected",
+                            description=f"Message contains external link '{url_str}'. Inspect passively before interacting.",
+                            matched_pattern=url_str,
+                            severity_contribution=RiskSeverity.LOW
+                        )
+                    )
 
         # Context evaluation: Platform + Sender checks
         if request.sender_hint:

@@ -70,6 +70,17 @@ def test_confirmed_threat_intel_match():
     assert "Known Phishing Campaign" in result.threat_intel_source
 
 
+def test_leetspeak_typosquatting():
+    # 'paypa1.com' uses number '1' instead of letter 'l'
+    request = UrlAnalysisRequest(url="https://paypa1.com/login")
+    result = url_analyzer.analyze(request)
+
+    assert result.is_threat is True
+    assert result.primary_category in (ThreatCategory.IMPERSONATION, ThreatCategory.PHISHING)
+    assert result.severity in (RiskSeverity.HIGH, RiskSeverity.CRITICAL)
+    assert any("paypal" in e.description.lower() or "mimic" in e.description.lower() for e in result.evidence)
+
+
 def test_benign_clean_url():
     request = UrlAnalysisRequest(url="https://developer.mozilla.org/en-US/docs/Web/Security")
     result = url_analyzer.analyze(request)

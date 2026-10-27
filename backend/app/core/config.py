@@ -1,6 +1,6 @@
 """Application configuration settings using pydantic-settings."""
 
-from typing import List
+from typing import List, Optional
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -25,6 +25,12 @@ class Settings(BaseSettings):
 
     # Rate Limiting (Requests per minute)
     RATE_LIMIT_PER_MINUTE: int = 60
+
+    # External Threat Intelligence APIs (Optional)
+    # If keys are not provided, system operates using local verified threat signature engine
+    GOOGLE_SAFE_BROWSING_API_KEY: Optional[str] = None
+    VIRUSTOTAL_API_KEY: Optional[str] = None
+    ENABLE_EXTERNAL_INTEL: bool = True
 
     model_config = SettingsConfigDict(
         env_file=".env",

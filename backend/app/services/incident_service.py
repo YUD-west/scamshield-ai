@@ -4,26 +4,27 @@ import hashlib
 import uuid
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
+from app.db.database import get_db, init_db
 from app.models.schemas import (
     ConsentLocation,
     IncidentCreateRequest,
     IncidentRecord,
     OfficialReportExport,
 )
-from app.models.threat_types import ThreatCategory
+from app.models.threat_types import ThreatCategory, RiskSeverity
 from app.services.boundaries.reporting_agency import reporting_boundary
 
 
 class IncidentService:
-    """Handles secure evidence capture, cryptographic hashing, and report generation."""
+    """Handles secure evidence capture, cryptographic hashing, and report generation using SQLite database."""
 
     def __init__(self):
-        # In-memory incident storage for local session/audit log
-        self._incidents: Dict[str, IncidentRecord] = {}
+        init_db()
 
-    def record_incident(self, req: IncidentCreateRequest) -> IncidentRecord:
+    def record_incident(self, req: IncidentCreateRequest, user_id: Optional[str] = None) -> IncidentRecord:
         incident_id = str(uuid.uuid4())
         timestamp = datetime.now(timezone.utc)
+        created_str = timestamp.isoformat()
 
         # 1. Compute Cryptographic Evidence Checksum (SHA-256)
         evidence_bytes = req.raw_evidence.encode("utf-8")
@@ -52,14 +53,124 @@ class IncidentService:
             created_at=timestamp,
         )
 
-        self._incidents[incident_id] = record
+        category_val = req.category.value if hasattr(req.category, "value") else str(req.category)
+        severity_val = req.severity.value if hasattr(req.severity, "value") else str(req.severity)
+
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO incidents (
+                    id, user_id, title, category, severity, description,
+                    raw_evidence, evidence_sha256, sender_information,
+                    financial_loss_amount, status, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'EVIDENCE_LOCKED', ?)
+            """, (
+                incident_id,
+                user_id,
+                req.title,
+                category_val,
+                severity_val,
+                req.description,
+                req.raw_evidence,
+                evidence_hash,
+                req.sender_information,
+                req.financial_loss_amount,
+                created_str
+            ))
+            conn.commit()
+
         return record
 
     def get_incident(self, incident_id: str) -> Optional[IncidentRecord]:
-        return self._incidents.get(incident_id)
+        with get_db() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT id, title, category, severity, description, raw_evidence,
+                       evidence_sha256, sender_information, financial_loss_amount,
+                       status, created_at
+                FROM incidents
+                WHERE id = ?
+            """, (incident_id,))
+            row = cursor.fetchone()
 
-    def list_incidents(self) -> List[IncidentRecord]:
-        return sorted(self._incidents.values(), key=lambda r: r.created_at, reverse=True)
+        if not row:
+            return None
+
+        return self._row_to_record(row)
+
+    def list_incidents(self, user_id: Optional[str] = None) -> List[IncidentRecord]:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            if user_id:
+                cursor.execute("""
+                    SELECT id, title, category, severity, description, raw_evidence,
+                           evidence_sha256, sender_information, financial_loss_amount,
+                           status, created_at
+                    FROM incidents
+                    WHERE user_id = ? OR user_id IS NULL
+                    ORDER BY created_at DESC
+                """, (user_id,))
+            else:
+                cursor.execute("""
+                    SELECT id, title, category, severity, description, raw_evidence,
+                           evidence_sha256, sender_information, financial_loss_amount,
+                           status, created_at
+                    FROM incidents
+                    ORDER BY created_at DESC
+                """)
+            rows = cursor.fetchall()
+
+        return [self._row_to_record(row) for row in rows]
+
+    def delete_incident(self, incident_id: str, user_id: Optional[str] = None) -> bool:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            if user_id:
+                cursor.execute("DELETE FROM incidents WHERE id = ? AND (user_id = ? OR user_id IS NULL)", (incident_id, user_id))
+            else:
+                cursor.execute("DELETE FROM incidents WHERE id = ?", (incident_id,))
+            conn.commit()
+            return cursor.rowcount > 0
+
+    def clear_incidents(self, user_id: Optional[str] = None) -> int:
+        with get_db() as conn:
+            cursor = conn.cursor()
+            if user_id:
+                cursor.execute("DELETE FROM incidents WHERE user_id = ?", (user_id,))
+            else:
+                cursor.execute("DELETE FROM incidents")
+            conn.commit()
+            return cursor.rowcount
+
+    def _row_to_record(self, row) -> IncidentRecord:
+        try:
+            category_enum = ThreatCategory(row["category"])
+        except Exception:
+            category_enum = ThreatCategory.PHISHING
+
+        try:
+            severity_enum = RiskSeverity(row["severity"])
+        except Exception:
+            severity_enum = RiskSeverity.HIGH
+
+        try:
+            created_dt = datetime.fromisoformat(row["created_at"])
+        except Exception:
+            created_dt = datetime.now(timezone.utc)
+
+        return IncidentRecord(
+            incident_id=row["id"],
+            title=row["title"],
+            category=category_enum,
+            severity=severity_enum,
+            description=row["description"],
+            raw_evidence=row["raw_evidence"],
+            evidence_sha256=row["evidence_sha256"],
+            sender_information=row["sender_information"],
+            financial_loss_amount=row["financial_loss_amount"],
+            status=row["status"] or "EVIDENCE_LOCKED",
+            created_at=created_dt
+        )
 
     def export_report(self, incident_id: str) -> OfficialReportExport:
         incident = self.get_incident(incident_id)

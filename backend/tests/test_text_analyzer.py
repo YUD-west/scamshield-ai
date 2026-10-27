@@ -104,6 +104,21 @@ def test_government_impersonation():
     assert result.severity == RiskSeverity.HIGH
 
 
+def test_text_with_embedded_phishing_url():
+    # Message combines urgency and a lookalike phishing URL
+    request = TextAnalysisRequest(
+        content="URGENT: Your Chase account is locked due to unusual activity. Verify your account within 24 hours: http://chase-secure.xyz"
+    )
+    result = text_analyzer.analyze(request)
+
+    assert result.is_threat is True
+    assert result.severity in (RiskSeverity.HIGH, RiskSeverity.CRITICAL)
+    assert len(result.extracted_urls) == 1
+    assert "http://chase-secure.xyz" in result.extracted_urls
+    # URL evidence should be merged
+    assert any("chase" in e.description.lower() or "xyz" in e.title.lower() or "embedded" in e.title.lower() for e in result.evidence)
+
+
 def test_benign_message():
     request = TextAnalysisRequest(
         content="Hi Alex, are we still meeting tomorrow for coffee around 10am? Let me know if that works."

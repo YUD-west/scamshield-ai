@@ -35,6 +35,13 @@ htmlcov/
 .env
 !.env.example
 
+# Database & Runtime Local Data
+backend/data/*.db
+backend/data/*.sqlite
+backend/data/incidents.json
+*.db
+*.sqlite
+
 # Node / Frontend
 node_modules/
 dist/

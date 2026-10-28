@@ -9,10 +9,14 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker
       .register('/sw.js')
       .then((reg) => {
-        console.log('ScamShield PWA Service Worker registered:', reg.scope);
+        if (import.meta.env.DEV) {
+          console.log('ScamShield PWA Service Worker registered:', reg.scope);
+        }
       })
       .catch((err) => {
-        console.warn('ScamShield PWA Service Worker registration non-fatal notice:', err);
+        if (import.meta.env.DEV) {
+          console.warn('ScamShield PWA Service Worker registration non-fatal notice:', err);
+        }
       });
   });
 }

@@ -1,24 +1,24 @@
 # ScamShield AI
 
-[![Vercel Deployment](https://img.shields.io/badge/Deployment-Vercel-black?logo=vercel)](https://scamshield-ai-je1u.vercel.app/)
-[![Render API](https://img.shields.io/badge/API-Render-46E3B7?logo=render&logoColor=white)](https://scamshield-ai-1-4s92.onrender.com/api/v1/docs)
-[![Python](https://img.shields.io/badge/Python-3.11%2B-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115%2B-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/Tests-49%20Passing-success?logo=pytest&logoColor=white)](https://github.com/YUD-west/scamshield-ai)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+> 🚀 **Live Demo:** [https://scamshield-ai-je1u.vercel.app](https://scamshield-ai-je1u.vercel.app/)  
+> 📡 **API Service & Swagger Docs:** [https://scamshield-ai-1-4s92.onrender.com/api/v1/docs](https://scamshield-ai-1-4s92.onrender.com/api/v1/docs)
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-success?style=for-the-badge&logo=vercel)](https://scamshield-ai-je1u.vercel.app/)
+[![API Docs](https://img.shields.io/badge/API%20Docs-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)](https://scamshield-ai-1-4s92.onrender.com/api/v1/docs)
+[![Tests Passing](https://img.shields.io/badge/Tests-49%20Passing-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](https://github.com/YUD-west/scamshield-ai)
 
 **ScamShield AI** is an open-source, non-executing cyber threat triage and scam analysis platform. It inspects suspicious messages, phishing emails, SMS lures (smishing), and dangerous URLs in a strictly isolated environment without following redirects, running remote scripts, or exposing user data.
 
 ---
 
-## Live Deployments
+## Deployments
 
-- **Web Application:** [https://scamshield-ai-je1u.vercel.app](https://scamshield-ai-je1u.vercel.app/)
-- **Backend API Server:** [https://scamshield-ai-1-4s92.onrender.com](https://scamshield-ai-1-4s92.onrender.com)
-- **Interactive OpenAPI Documentation:** [https://scamshield-ai-1-4s92.onrender.com/api/v1/docs](https://scamshield-ai-1-4s92.onrender.com/api/v1/docs)
-- **API Health Check:** [https://scamshield-ai-1-4s92.onrender.com/api/v1/health](https://scamshield-ai-1-4s92.onrender.com/api/v1/health)
+| Component | Platform | URL | Status |
+| :--- | :--- | :--- | :--- |
+| **Web Application (UI)** | Vercel | [https://scamshield-ai-je1u.vercel.app](https://scamshield-ai-je1u.vercel.app/) | `Operational` |
+| **Backend API Server** | Render | [https://scamshield-ai-1-4s92.onrender.com](https://scamshield-ai-1-4s92.onrender.com) | `Operational` |
+| **Interactive API Docs** | Render | [https://scamshield-ai-1-4s92.onrender.com/api/v1/docs](https://scamshield-ai-1-4s92.onrender.com/api/v1/docs) | `Swagger UI` |
+| **API Health Probe** | Render | [https://scamshield-ai-1-4s92.onrender.com/api/v1/health](https://scamshield-ai-1-4s92.onrender.com/api/v1/health) | `HTTP 200` |
 
 ---
 
@@ -243,17 +243,19 @@ pytest -v
 
 ## Deployment Architecture
 
-### Backend (Render)
-- **Repository Root:** Python 3 Web Service via `render.yaml`.
-- **Build Command:** `pip install -r requirements.txt`
-- **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
-
 ### Frontend (Vercel)
+- **Production URL:** [https://scamshield-ai-je1u.vercel.app](https://scamshield-ai-je1u.vercel.app/)
 - **Root Directory:** `frontend`
 - **Build Command:** `npm run build`
 - **Output Directory:** `dist`
 - **Environment Variable:** `VITE_API_URL=https://scamshield-ai-1-4s92.onrender.com`
 - **Routing:** Handled via `frontend/vercel.json` SPA rewrite rules.
+
+### Backend (Render)
+- **Production URL:** [https://scamshield-ai-1-4s92.onrender.com](https://scamshield-ai-1-4s92.onrender.com)
+- **Repository Root:** Python 3 Web Service via `render.yaml`.
+- **Build Command:** `pip install -r requirements.txt`
+- **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
 
 ---
 
